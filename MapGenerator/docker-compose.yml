@@ -2,10 +2,27 @@
 
 services:
   map:
+    container_name: Map_api
     build:
       context: .
       dockerfile: Server/Dockerfile
     ports:
       - "8080:8080"
       - "8081:8081"
+    depends_on:
+      - map-db
+  map-db:
+    container_name: map_db
+    image: "mcr.microsoft.com/mssql/server:2022-latest"
+    ports:
+      - "1433:1433"
+    environment:
+      SA_PASSWORD: "Sqlhaslo123!"
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Evaluation"
+    volumes:
+      - map-db:/var/lib/mssql
 
+volumes:
+  map-db:
+    driver: local
