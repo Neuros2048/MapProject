@@ -1,0 +1,61 @@
+﻿@page "/Login"
+@using Client.Services
+@using Shared.DTO
+@using Shared.Response.SuccessRespond
+
+@inject NavigationManager NavigationManager
+@inject AuthService AuthService
+@inject ILocalStorageService LocalStorageService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+<h3>Login</h3>
+
+<div>
+    <EditForm Model="LoginDTO" OnValidSubmit="HandleLogin">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <p>Login:</p>
+        <InputText @bind-Value="LoginDTO.Email" id="email" class="form-control"></InputText>
+        <p>Hasło:</p>
+        <InputText @bind-Value="LoginDTO.Password" id="password" type="password" class="form-control"></InputText>
+        <br/>
+        <button type="submit" class="btn btn-primary w-100 my-4 mb-2" >Zaloguj się</button>
+
+    </EditForm>
+    
+    @if (logging)
+    {
+        <div class="loader"></div>
+    }
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <p>@message</p>
+    }
+</div>
+
+@code {
+
+    private LoginDto LoginDTO = new LoginDto();
+    private string message = string.Empty;
+    private bool logging = false;
+
+    private async Task HandleLogin()
+    {
+        logging = true;
+        message = string.Empty;
+        var result = await AuthService.Login(LoginDTO);
+        if (result == null)
+        {
+            logging = false;
+            message = "Nie poprawne dane logowania";
+        }
+        else
+        {
+            await LocalStorageService.SetItemAsync("authToken", result);
+            await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            logging = false;
+            NavigationManager.NavigateTo("/");
+        }
+    }
+
+
+}

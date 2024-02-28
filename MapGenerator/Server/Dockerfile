@@ -9,6 +9,7 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["Server/Server.csproj", "Server/"]
 COPY ["Client/Client.csproj", "Client/"]
+COPY ["Shared/Shared.csproj", "Shared/"]
 RUN dotnet restore "Server/Server.csproj"
 COPY . .
 WORKDIR "/src/Server"

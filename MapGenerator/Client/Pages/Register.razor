@@ -1,0 +1,63 @@
+﻿@page "/Register"
+@using Client.Services
+@using Shared.DTO
+@using Shared.Response.SuccessRespond
+
+@inject AuthService AuthService
+@inject ILocalStorageService LocalStorageService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+
+
+<div>
+    <EditForm Model="RegisterDto" OnValidSubmit="HandleLogin">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <p>Login:</p>
+        <InputText @bind-Value="RegisterDto.Email" id="email" class="form-control"></InputText>
+        <p>Username:</p>
+        <InputText @bind-Value="RegisterDto.Username" id="username" class="form-control"></InputText>
+        <p>Hasło:</p>
+        <InputText @bind-Value="RegisterDto.Password" id="password" type="password" class="form-control"></InputText>
+         <p>Hasło:</p>
+        <InputText @bind-Value="RegisterDto.ConfirmPassword" id="confirmpassword" type="password" class="form-control"></InputText>
+        <br/>
+        <button type="submit" class="btn btn-primary w-100 my-4 mb-2" >Zarejestru się</button>
+
+    </EditForm>
+    
+    @if (logging)
+    {
+        <div class="loader"></div>
+    }
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <p>@message</p>
+    }
+</div>
+
+@code {
+
+    private RegisterDto RegisterDto = new RegisterDto();
+    private string message = string.Empty;
+    private bool logging = false;
+
+    private async Task HandleLogin()
+    {
+        logging = true;
+        message = string.Empty;
+        var result = await AuthService.Register(RegisterDto);
+        if (result is SuccessResult)
+        {
+            logging = false;
+            message = "Rejestracja zokończona poprawnie";
+        }
+        else
+        {
+            logging = false;
+            message = "Rejestracja zakończona niepowodzeniem";
+        }
+    }
+
+
+}
