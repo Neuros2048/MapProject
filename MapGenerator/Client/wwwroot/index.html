@@ -38,6 +38,35 @@
     </div>
     <script src="_framework/blazor.webassembly.js"></script>
     <script>navigator.serviceWorker.register('service-worker.js');</script>
+    <script>
+        window.setImage = async (imageElementId, imageStream) => {
+            const arrayBuffer = await imageStream.arrayBuffer();
+            const blob = new Blob([arrayBuffer]);
+            const url = URL.createObjectURL(blob);
+            const image = document.getElementById(imageElementId);
+            image.onload = () => {
+                URL.revokeObjectURL(url);
+            }
+            image.src = url;
+        }
+    </script>
+    <script>
+        window.addImage = async (imageStream) => {
+            const arrayBuffer = await imageStream.arrayBuffer();
+            const blob = new Blob([arrayBuffer]);
+            return URL.createObjectURL(blob);
+            
+        }
+    </script>
+    <script>
+        window.setImageUrl = async (imageElementId, url,rot=0) => {
+            const image = document.getElementById(imageElementId);
+            image.src = url;
+            image.style.transform = 'rotate('+90*rot +'deg)';
+        }
+
+        
+    </script>
 </body>
 
 </html>

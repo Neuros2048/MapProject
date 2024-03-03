@@ -27,6 +27,33 @@ a, .btn-link {
     border-color: #1861ac;
 }
 
+.image-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.image-grid .col {
+    padding: 0; /* Remove padding */
+}
+
+.image-grid img {
+    margin: 0; /* Remove any default margins */
+    width: auto; /* Ensures the image width adjusts according to its container */
+    height: auto; /* Ensures the image height adjusts according to its container */
+    max-width: 100%; /* Ensures the image never exceeds the container width */
+    max-height: 100%; /* Ensures the image never exceeds the container height */
+    object-fit: cover;
+
+    display: block; /* Ensure images don't have extra whitespace */
+}
+.rotated-90 {
+    transform: rotate(90deg);
+}
+.rotated-image {
+    transform: rotate(180deg); /* Rotate the image by 45 degrees */
+}
+
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
   box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }

@@ -9,6 +9,7 @@ public static class ServicesInjection
     {
         serviceCollection.AddScoped<AuthService>();
         serviceCollection.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
+        serviceCollection.AddScoped<ImageEditor>();
         return serviceCollection;
     }
 }
