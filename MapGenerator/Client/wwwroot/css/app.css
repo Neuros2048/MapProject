@@ -50,7 +50,7 @@ a, .btn-link {
 .rotated-90 {
     transform: rotate(90deg);
 }
-.rotated-image {
+.rotated-180 {
     transform: rotate(180deg); /* Rotate the image by 45 degrees */
 }
 

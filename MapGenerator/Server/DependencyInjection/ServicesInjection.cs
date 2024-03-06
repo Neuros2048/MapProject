@@ -7,6 +7,7 @@ public static class ServicesInjection
     public static IServiceCollection AddServices(this IServiceCollection serviceCollection)
     {
         serviceCollection.AddScoped<AuthService>();
+        serviceCollection.AddScoped<TileService>();
         return serviceCollection;
     }
 }
