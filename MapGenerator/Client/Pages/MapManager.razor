@@ -1,7 +1,9 @@
 ﻿@page "/MapManager"
 @using System.Net
 @using System.Numerics
+@using Client.Services
 @using Shared.DTO
+@inject MapService MapS
 @inject IJSRuntime Js
 <h3>MapManager</h3>
 
@@ -29,6 +31,9 @@
     Set Image
 </button>
 
+<button @onclick="SendImage">
+    wysli obrazek
+</button>
 @if (toSet)
 {
 	<EditForm Model="toEdit" OnSubmit="HandleSubmit">
@@ -309,6 +314,19 @@
 		{
 			Reduce( TilesTypes[tile][0],n,m+1,2);
 		}
+	}
+
+	private async Task SendImage()
+	{
+		string url = TilesUrls[0];
+
+		var ass = await MapS.SendImageToServer(url);
+		Stream stream = new MemoryStream(ass);
+		var dotnetImageStream = new DotNetStreamReference(stream);
+		Console.WriteLine(url);
+		url = await Js.InvokeAsync<string>("addImage", dotnetImageStream);
+		Console.WriteLine(url);
+		TilesUrls.Add(url);
 	}
 
 }
