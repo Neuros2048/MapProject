@@ -205,7 +205,7 @@
 	}
 	private List<string[]> TilesTypes = new List<string[]>();
 	private List<string> TilesUrls = new List<string>();
-	private Tile[][] map;
+	private Tilep[][] map;
 	private int nMax;
 	private int mMax;
 	PriorityQueue<int[], int> q = new PriorityQueue<int[], int>();
@@ -215,10 +215,10 @@
 		n = 100;
 		nMax = n;
 		mMax = n;
-		map = new Tile[n][];
+		map = new Tilep[n][];
 		for (int i = 0; i < n; i++)
 		{
-			map[i] = new Tile[n];
+			map[i] = new Tilep[n];
 		}
 		Console.WriteLine(map[0][0] == null);
 		
@@ -233,7 +233,7 @@
 		{
 			for (int j = 0; j < mMax; j++)
 			{
-				map[i][j] = new Tile
+				map[i][j] = new Tilep
 				{
 					Possibilities = allPossibilities.ToList()
 				};

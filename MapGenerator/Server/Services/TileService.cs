@@ -1,5 +1,9 @@
-﻿using Server.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using Server.Entities.Entities;
+using Server.Entities.Mappers;
+using Server.Models;
 using Server.Response;
+using Shared.DTO;
 using Shared.Response.ErrorRespond;
 using Shared.Response.IResponse;
 using Shared.Response.SuccessRespond;
@@ -8,8 +12,111 @@ namespace Server.Services;
 
 public class TileService(DataContext dataContext)
 {
-   async Task<HandlerResult<Success, IErrorResult>> SaveTile()
+   public async Task<HandlerResult<Success, IErrorResult>> SaveTile()
    {
       return new EntityNotFound();
    }
+   
+   public async Task<HandlerResult<SuccessData<TileSetDto>, IErrorResult>> CreateTileSet(TileSetDto tileSetDto, long userId)
+   {
+      var result = await dataContext.TileSets.AddAsync(TileSetMapper.DtoToTileSet(tileSetDto,userId));
+      await dataContext.SaveChangesAsync();
+      return new SuccessData<TileSetDto>()
+      {
+         Data = TileSetMapper.TileSetToDto(result.Entity)
+      };
+   }
+   public async Task<HandlerResult<SuccessData<List<TileSetDto>>, IErrorResult>> GetSets(long userId)
+   {
+      return new SuccessData<List<TileSetDto>>()
+      {
+         Data = await dataContext.TileSets.Where(x => x.UserId == userId).Select(x => TileSetMapper.TileSetToDto(x))
+            .ToListAsync()
+      };
+   }
+   
+   public async Task<HandlerResult<Success, IErrorResult>> RemoveSet(long id)
+   {
+      var result = await dataContext.TileSets.FindAsync(id);
+      if (result == null)
+      {
+         return new EntityNotFound();
+      }
+
+      dataContext.TileSets.Remove(result);
+      await dataContext.SaveChangesAsync();
+      return new Success();
+   }
+   
+   public async Task<HandlerResult<SuccessData<TileDto>, IErrorResult>> AddTile(TileDto tileDto)
+   {
+      var result = await dataContext.Tiles.AddAsync(TileMapper.DtoToTile(tileDto));
+      await dataContext.SaveChangesAsync();
+      return new SuccessData<TileDto>()
+      {
+         Data = TileMapper.TileToDto(result.Entity)
+      };
+   }
+   public async Task<HandlerResult<SuccessData<List<TileDto>>, IErrorResult>> GetTiles(long tileSetId)
+   {
+      return new SuccessData<List<TileDto>>()
+      {
+         Data = await dataContext.Tiles.Where(x => x.TileSetId == tileSetId).Select(x => TileMapper.TileToDto(x))
+            .ToListAsync()
+      };
+   }
+   
+   public async Task<HandlerResult<Success, IErrorResult>> RemoveTile(long tileId)
+   {
+      var result = await dataContext.Tiles.FindAsync(tileId);
+      if (result == null) return new EntityNotFound();
+      var tileWeighs = await dataContext.Weights.Where(x => x.TileId == tileId).ToListAsync();
+      var setTiles = await dataContext.SetTiles.Where(x => x.TileId == tileId).ToListAsync();
+      foreach (var t in tileWeighs)
+      {
+         dataContext.Weights.Remove(t);
+      }
+      foreach (var t in setTiles)
+      {
+         dataContext.SetTiles.Remove(t);
+      }
+      dataContext.Tiles.Remove(result);
+      await dataContext.SaveChangesAsync();
+      return new Success();
+   }
+   public async Task<HandlerResult<Success, IErrorResult>> UpdateTile(TileDto tileDto)
+   {
+      var result = await dataContext.Tiles.FindAsync(tileDto.Id);
+      if (result == null) return new EntityNotFound();
+      result.P0 = tileDto.P0;
+      result.P1 = tileDto.P1;
+      result.P2 = tileDto.P2;
+      result.P3 = tileDto.P3;
+      return new Success();
+   }
+
+   public async Task<HandlerResult<Success, IErrorResult>> CheckRightsSet(long tileSetId, long userId)
+   {
+      var result = await dataContext.TileSets.FindAsync(tileSetId);
+      if(result == null) return new UnauthorizedUser();
+      if(result.UserId != userId) return new UnauthorizedUser();
+      return new Success();
+   }
+   
+   public async Task<HandlerResult<Success, IErrorResult>> CheckRightsTile(long tileId, long userId)
+   {
+      var result = await dataContext.Tiles.FindAsync(tileId);
+      if(result == null) return new UnauthorizedUser();
+      return await CheckRightsSet(result.TileSetId, userId);
+   }
+   
+   public async Task<HandlerResult<Success, IErrorResult>> CheckRightsMap(long mapId, long userId)
+   {
+      var result = await dataContext.GeneratedMaps.FindAsync(mapId);
+      if(result == null) return new UnauthorizedUser();
+      return await CheckRightsSet(result.TileSetId, userId);
+   }
+   
+   
+   
 }

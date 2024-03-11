@@ -1,7 +1,4 @@
-﻿using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
-
+﻿
 namespace Client.Services;
 
 public class ImageEditor(HttpClient http)
@@ -14,7 +11,7 @@ public class ImageEditor(HttpClient http)
             "https://avatars.githubusercontent.com/u/9141961");
         
     }
-
+    /*
     public  async Task<Stream> ImageToGridAsync(Stream inputStream)
     {
         using (Image<Rgba32> originalImage = await Image.LoadAsync<Rgba32>(inputStream))
@@ -48,7 +45,7 @@ public class ImageEditor(HttpClient http)
                 return outputStream;
             }
         }
-    }
+    }*/
     /*
     public async Task<Stream> eddit()
     {

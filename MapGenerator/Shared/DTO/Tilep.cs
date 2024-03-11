@@ -1,6 +1,6 @@
 ﻿namespace Shared.DTO;
 
-public class Tile
+public class Tilep
 {
     public int Type { get; set; } = -1;
     public int Rotation { get; set; } = 0;

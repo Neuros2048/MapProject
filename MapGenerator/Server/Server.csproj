@@ -32,7 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Entities\Enumerations\" />
+    <Folder Include="Migrations\" />
   </ItemGroup>
 
   <ItemGroup>

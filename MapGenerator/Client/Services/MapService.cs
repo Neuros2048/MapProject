@@ -22,8 +22,9 @@ public class MapService
         Console.WriteLine(Convert.ToBase64String(imageData));
         TileDto tileDto = new TileDto()
         {
-            id = 0,
-            image = Convert.ToBase64String(imageData)
+            Id = 0,
+            Image = imageData
+           // image = Convert.ToBase64String(imageData)
         };
         var r1 = await _http.GetAsync("api/Map/get");
         Console.WriteLine(r1.IsSuccessStatusCode);
@@ -32,8 +33,8 @@ public class MapService
         Console.WriteLine("a");
         Console.WriteLine(result.IsSuccessStatusCode);
         var r2 = await result.Content.ReadFromJsonAsync<TileDto>();
-        Console.WriteLine(r2.image);
-        byte[] fileBytes = Convert.FromBase64String(r2.image);
+        Console.WriteLine(r2.Image);
+        byte[] fileBytes = r2.Image;//Convert.FromBase64String(r2.image);
         return fileBytes;
         // Send the base64 string to the server
     }

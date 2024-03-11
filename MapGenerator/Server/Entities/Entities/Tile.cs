@@ -1,4 +1,6 @@
-﻿namespace Server.Entities.Entities;
+﻿using Server.Entities.Enumerations;
+
+namespace Server.Entities.Entities;
 
 public class Tile
 {
@@ -7,7 +9,12 @@ public class Tile
     public string? P1 { get; set; }
     public string? P2 { get; set; }
     public string? P3 { get; set; }
+    public TileSymmetry Symmetry { get; set; }
     public TileSet? TileSet { get; set; }
     public long TileSetId { get; set; }
     public byte[]? Stream { get; set; }
+    
+    public List<SetTile> SetTiles { get; set; }
+    public List<TileWeight> TileWeights { get; set; }
+    
 }

@@ -3,7 +3,7 @@ using Shared.DTO;
 
 namespace Server.Entities.Mappers;
 
-public class UserMapper
+public static class UserMapper
 {
     public static User RegisterToUser(RegisterDto registerDto,int workFactor = 4)
     {

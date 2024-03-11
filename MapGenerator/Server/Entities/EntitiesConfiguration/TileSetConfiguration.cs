@@ -8,6 +8,13 @@ public class TileSetConfiguration : IEntityTypeConfiguration<TileSet>
 {
     public void Configure(EntityTypeBuilder<TileSet> builder)
     {
-        throw new NotImplementedException();
+        builder.HasKey(x => x.Id);
+        
+        builder.Property(x => x.Name)
+            .IsRequired();
+
+        builder.HasOne(x => x.User)
+            .WithMany(x => x.TileSets)
+            .HasForeignKey(x => x.UserId);
     }
 }

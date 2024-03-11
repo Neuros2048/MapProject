@@ -1,20 +1,17 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Server.Entities.Entities;
-using Shared.DTO;
 
 namespace Server.Entities.EntitiesConfiguration;
 
-public class TileConfiguration: IEntityTypeConfiguration<Tile>
+public class GeneratedMapConfiguration : IEntityTypeConfiguration<GeneratedMap>
 {
-    public void Configure(EntityTypeBuilder<Tile> builder)
+    public void Configure(EntityTypeBuilder<GeneratedMap> builder)
     {
         builder.HasKey(x => x.Id);
 
         builder.HasOne(x => x.TileSet)
-            .WithMany(x => x.Tiles)
+            .WithMany(x => x.GeneratedMaps)
             .HasForeignKey(x => x.TileSetId);
-        builder.Property(x => x.Stream)
-            .IsRequired();
     }
 }
