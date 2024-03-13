@@ -25,5 +25,8 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
     
     private static void Seed(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<User>().HasData(Seeder.GenerateUsers());
+        modelBuilder.Entity<TileSet>().HasData(Seeder.GenerateTileSets());
+        modelBuilder.Entity<Tile>().HasData(Seeder.GenerateTiles());
     }
 }
