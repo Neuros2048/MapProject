@@ -46,20 +46,21 @@ namespace Server.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "TiGeneratedMaps",
+                name: "GeneratedMaps",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     N = table.Column<int>(type: "int", nullable: false),
                     M = table.Column<int>(type: "int", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     TileSetId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TiGeneratedMaps", x => x.Id);
+                    table.PrimaryKey("PK_GeneratedMaps", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_TiGeneratedMaps_TileSets_TileSetId",
+                        name: "FK_GeneratedMaps_TileSets_TileSetId",
                         column: x => x.TileSetId,
                         principalTable: "TileSets",
                         principalColumn: "Id",
@@ -106,17 +107,16 @@ namespace Server.Migrations
                 {
                     table.PrimaryKey("PK_SetTiles", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_SetTiles_TiGeneratedMaps_GeneratedMapId",
+                        name: "FK_SetTiles_GeneratedMaps_GeneratedMapId",
                         column: x => x.GeneratedMapId,
-                        principalTable: "TiGeneratedMaps",
+                        principalTable: "GeneratedMaps",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_SetTiles_Tiles_TileId",
                         column: x => x.TileId,
                         principalTable: "Tiles",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -132,18 +132,22 @@ namespace Server.Migrations
                 {
                     table.PrimaryKey("PK_Weights", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Weights_TiGeneratedMaps_GeneratedMapId",
+                        name: "FK_Weights_GeneratedMaps_GeneratedMapId",
                         column: x => x.GeneratedMapId,
-                        principalTable: "TiGeneratedMaps",
+                        principalTable: "GeneratedMaps",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Weights_Tiles_TileId",
                         column: x => x.TileId,
                         principalTable: "Tiles",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GeneratedMaps_TileSetId",
+                table: "GeneratedMaps",
+                column: "TileSetId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SetTiles_GeneratedMapId",
@@ -154,11 +158,6 @@ namespace Server.Migrations
                 name: "IX_SetTiles_TileId",
                 table: "SetTiles",
                 column: "TileId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_TiGeneratedMaps_TileSetId",
-                table: "TiGeneratedMaps",
-                column: "TileSetId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Tiles_TileSetId",
@@ -197,7 +196,7 @@ namespace Server.Migrations
                 name: "Weights");
 
             migrationBuilder.DropTable(
-                name: "TiGeneratedMaps");
+                name: "GeneratedMaps");
 
             migrationBuilder.DropTable(
                 name: "Tiles");

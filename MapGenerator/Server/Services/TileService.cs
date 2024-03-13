@@ -35,9 +35,9 @@ public class TileService(DataContext dataContext)
       };
    }
    
-   public async Task<HandlerResult<Success, IErrorResult>> RemoveSet(long id)
+   public async Task<HandlerResult<Success, IErrorResult>> RemoveSet(long tileSetId)
    {
-      var result = await dataContext.TileSets.FindAsync(id);
+      var result = await dataContext.TileSets.FindAsync(tileSetId);
       if (result == null)
       {
          return new EntityNotFound();
@@ -116,7 +116,74 @@ public class TileService(DataContext dataContext)
       if(result == null) return new UnauthorizedUser();
       return await CheckRightsSet(result.TileSetId, userId);
    }
+
+   public async Task<HandlerResult<SuccessData<GeneratedMapDto>, IErrorResult>> PrepareNewMap(long tileSetId)
+   {
+      GeneratedMapDto mapDto = new GeneratedMapDto
+      {
+         TileWeightDtos = await dataContext.Tiles.Where(x => x.TileSetId == tileSetId)
+            .Select(x => TileWeightMapper.NewWeightDto(x.Id, 0)).ToListAsync(),
+         SetTileDtos = new List<SetTileDto>()
+      };
+      return new SuccessData<GeneratedMapDto>()
+      {
+         Data = mapDto
+      };
+   }
+
+   public async Task<HandlerResult<Success, IErrorResult>> SaveGeneratedMap(GeneratedMapDto mapDto)
+   {
+      GeneratedMap map = GeneratedMapMapper.DtoToMap(mapDto);
+      var mapRes = await dataContext.GeneratedMaps.AddAsync(map);
+      foreach (var t in mapDto.TileWeightDtos)
+      {
+         TileWeight tileWeight = TileWeightMapper.DtoToTileWeight(t);
+         tileWeight.GeneratedMap = mapRes.Entity;
+         await dataContext.Weights.AddAsync(tileWeight);
+      }
+      foreach (var t in mapDto.SetTileDtos)
+      {
+         SetTile setTile = SetTileMapper.DtoToSetTile(t);
+         setTile.GeneratedMap = mapRes.Entity;
+         await dataContext.SetTiles.AddAsync(setTile);
+      }
+      await dataContext.SaveChangesAsync();
+      return new Success();
+   }
+
+   public async Task<HandlerResult<SuccessData<List<GeneratedMapDto>>, IErrorResult>> GetMaps(long tileSetId)
+   {
+      return new SuccessData<List<GeneratedMapDto>>()
+      {
+         Data = await dataContext.GeneratedMaps.Where(x => x.TileSetId == tileSetId)
+         .Select(x => GeneratedMapMapper.MapToDto(x)).ToListAsync()
+      };
+   }
+
+   public async Task<HandlerResult<SuccessData<GeneratedMapDto>, IErrorResult>> GetMap(long mapId)
+   {
+      var resMap = await dataContext.GeneratedMaps.FindAsync(mapId);
+      if (resMap == null) return new EntityNotFound();
+      var weightList = await dataContext.Weights.Where(x => x.GeneratedMapId == mapId)
+         .Select(x => TileWeightMapper.TileWeightToDto(x)).ToListAsync();
+      var setTileList = await dataContext.SetTiles.Where(x => x.GeneratedMapId == mapId)
+         .Select(x => SetTileMapper.SetTileToDto(x)).ToListAsync();
+      GeneratedMapDto generatedMapDto = GeneratedMapMapper.MapToDto(resMap);
+      generatedMapDto.SetTileDtos = setTileList;
+      generatedMapDto.TileWeightDtos = weightList;
+      return new SuccessData<GeneratedMapDto>()
+      {
+         Data = generatedMapDto
+      };
+   }
    
-   
+   public async Task<HandlerResult<SuccessData<TileDto>, IErrorResult>> GetBaseTile()
+   {
+      Tile tile = await dataContext.Tiles.FindAsync(1);
+      return new SuccessData<TileDto>()
+      {
+         Data = TileMapper.TileToDto(tile)
+      };
+   }
    
 }

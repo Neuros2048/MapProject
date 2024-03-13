@@ -11,7 +11,7 @@ using Server.Models;
 namespace Server.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240311185519_Initial")]
+    [Migration("20240313120406_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -38,6 +38,10 @@ namespace Server.Migrations
                     b.Property<int>("N")
                         .HasColumnType("int");
 
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<long>("TileSetId")
                         .HasColumnType("bigint");
 
@@ -45,7 +49,7 @@ namespace Server.Migrations
 
                     b.HasIndex("TileSetId");
 
-                    b.ToTable("TiGeneratedMaps");
+                    b.ToTable("GeneratedMaps");
                 });
 
             modelBuilder.Entity("Server.Entities.Entities.SetTile", b =>
@@ -209,7 +213,7 @@ namespace Server.Migrations
                     b.HasOne("Server.Entities.Entities.Tile", "Tile")
                         .WithMany("SetTiles")
                         .HasForeignKey("TileId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("GeneratedMap");
@@ -250,7 +254,7 @@ namespace Server.Migrations
                     b.HasOne("Server.Entities.Entities.Tile", "Tile")
                         .WithMany("TileWeights")
                         .HasForeignKey("TileId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("GeneratedMap");

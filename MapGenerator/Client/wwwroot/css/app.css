@@ -37,6 +37,7 @@ a, .btn-link {
     padding: 0; /* Remove padding */
 }
 
+
 .image-grid img {
     margin: 0; /* Remove any default margins */
     width: auto; /* Ensures the image width adjusts according to its container */
@@ -53,6 +54,12 @@ a, .btn-link {
 .rotated-180 {
     transform: rotate(180deg); /* Rotate the image by 45 degrees */
 }
+
+.fix-size{
+    width: 100px;
+    height: 100px;
+}
+
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
   box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;

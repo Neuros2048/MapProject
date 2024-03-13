@@ -9,5 +9,6 @@ public class TileDto
     public string? P1 { get; set; }
     public string? P2 { get; set; }
     public string? P3 { get; set; }
+    public string? Url { get; set; }
     public long TileSetId { get; set; }
 }

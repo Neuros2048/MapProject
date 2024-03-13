@@ -1,105 +1,45 @@
 ﻿@page "/MapGenerator"
 @using Client.Services
 @using Shared.DTO
-
 <h3>MapGenerator</h3>
-
-@inject HttpClient Http
+@inject MapService MapS
 @inject IJSRuntime Js
-@inject ImageEditor Edit
-
-<PageTitle>Show Image 2</PageTitle>
-
-<h1>Show Image Example 2</h1>
-
-@if (ok )
-{
-
-        @for (int i = 0; i < gritsize; i++)
-        {
-            <div class="image-grid">
-                <div class="row">
-              
-                    @for (int j = 0; j < gritsize; j++)
-                    {
-                        <div class="col">
-                            <img class="" id="@ImageUrls[i * gritsize + j]"  alt="" src=""/>
-                        </div>
-                    }
-                </div>
-            </div>
-        }
-      
-}
- <img id="image" alt="" src=""/>
+@inject ILocalStorageService LocalStorageService
 
 
+<table class="table">
+	<thead>
+		<tr>
+			<th>Nazwa zbiory</th>
+			<th>Zobacz</th>
+		</tr>
+	</thead>
+	<tbody>
+		@foreach (var ts in MapS.TileSetDtos)
+		{
+			<tr>
+				<td>
+					<div>@ts.Name</div> </td>
+				<td>
+					<button class="btn btn-primary"
+					        @onclick="(() => SetCurrSet(ts))">
+						<i class="oi oi-pencil"></i>
+					</button>
+				</td>
+			</tr>
+		}
+	</tbody>
+</table>
 
-
-
-<button @onclick="SetImageAsync">
-    Set Image
-</button>
 
 @code {
-    private bool ok = false;
-    private async Task<Stream> GetImageStreamAsync()
+    protected override async void OnInitialized()
     {
-        return await Http.GetStreamAsync(
-            "https://avatars.githubusercontent.com/u/9141961");
-    }
-    //@ImageUrls[i * gritsize + j]
-    private int gritsize;
-    private int gritsize2;
-    protected override void OnInitialized()
-    {
-        gritsize = 10;
-        gritsize2 = gritsize * gritsize;
-        ImageUrls = new string[gritsize2];
-        for (int i = 0; i < gritsize2; i++)
-        {
-            
-            ImageUrls[i] = "image" + i;
-            
-        }
-        ok = true;
-       
-        base.OnInitialized();
+	    await MapS.TileSets2();
     }
 
-    private string[] ImageUrls { get; set; }
-    private async Task SetImageAsync()
+    private void SetCurrSet(TileSetDto tileSetDto)
     {
-       
-        //System.IO.Stream stream = new System.IO.MemoryStream();
-        //Edit.ImageToGrid(imageStream,stream);
-       
-        Console.WriteLine("ehjo0");
-        //var imageStream = await GetImageStreamAsync();
-        //await Image.LoadAsync<Rgba32>(imageStream);
-        var imageStream = await GetImageStreamAsync();
-        var dotnetImageStream = new DotNetStreamReference(imageStream);
-        Console.WriteLine("ehjo03");
-        var url = await Js.InvokeAsync<string>("addImage",dotnetImageStream);
-        Console.WriteLine("aa " + url);
-        Console.WriteLine("url?");
-        //imageStream = await GetImageStreamAsync();
-        //var output = await Edit.ImageToGridAsync(imageStream);
-        //var dotnetImageStream2 = new DotNetStreamReference(output);
-        //var aa = await Js.InvokeAsync<string>("setImage", "image", dotnetImageStream2);
-        //Console.WriteLine(aa);
-       
-        for (int i = 0; i < gritsize2; i++)
-        {
-            Console.WriteLine(ImageUrls[i]);
-           
-            await Js.InvokeVoidAsync("setImageUrl", ImageUrls[i], url,3);
-        }
-        Console.WriteLine("ehjo0");
-       
+	    
     }
-
-    
-    
 }
-
