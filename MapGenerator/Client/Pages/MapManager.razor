@@ -164,8 +164,8 @@
     protected override async void OnInitialized()
     {
 	    _tileSetDtos =  await MapS.TileSets();
-	    Console.WriteLine("hasdas");
 	    sets = true;
+	    this.StateHasChanged();
     }
 
     private List<string> imageToProces = new List<string>();

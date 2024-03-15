@@ -2,7 +2,7 @@
 
 public class Tilep
 {
-    public int Type { get; set; } = -1;
-    public int Rotation { get; set; } = 0;
+    public long Type { get; set; } = -1;
+
     public List<int>? Possibilities { get; set; } = new List<int>();
 }

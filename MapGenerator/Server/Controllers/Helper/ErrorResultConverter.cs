@@ -12,6 +12,7 @@ public static class ErrorResultConverter
         EntityNotFound => controller.NotFound(errorResult),
         IncorrectData =>controller.BadRequest(errorResult),
         WrongPassword => controller.BadRequest(errorResult),
-        _ => controller.StatusCode((int)HttpStatusCode.InternalServerError, errorResult)
+        UnauthorizedUser => controller.Unauthorized(errorResult),
+        _ => controller.StatusCode((int)HttpStatusCode.BadRequest, errorResult)
     };
 }

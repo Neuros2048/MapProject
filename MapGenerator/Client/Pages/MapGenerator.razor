@@ -6,7 +6,8 @@
 @inject IJSRuntime Js
 @inject ILocalStorageService LocalStorageService
 
-
+<button type="submit" class="btn btn-primary" onclick="@CreateSetTrue">Stworefres</button>
+<button type="submit" class="btn btn-primary" onclick="@CreateSetTrue2">xda </button>
 <table class="table">
 	<thead>
 		<tr>
@@ -31,15 +32,284 @@
 	</tbody>
 </table>
 
+@if (CurrSetDto.Id != 0)
+{
+	<EditForm Model="Map" OnSubmit="PrepareMap">
+		<div>
+			<label for="name">Nazwa</label>
+			<InputText id="name" @bind-Value="Map.Name" class="from-control" />
+		</div>
+		<div>
+			<label for="N">Wysokość</label>
+			<InputNumber id="N" @bind-Value="Map.N" class="from-control" />
+		</div>
+		<div>
+			<label for="M">Szerkość</label>
+			<InputNumber id="M" @bind-Value="Map.M" class="from-control" />
+		</div>
+		
+		<button type="submit" class="btn btn-primary">Potwierdz</button>
+	</EditForm>
+	
+	
+	@if (ok )
+	{
+
+		@for (int i = 0; i < Map.N; i++)
+		{
+			<div class="image-grid">
+				<div class="row">
+              
+					@for (int j = 0; j < Map.M; j++)
+					{
+						<div class="col">
+							@{
+								var i1 = i;
+								var j1 = j;
+							}
+							<img class="fix-size" id="imgId_@i+@j"  @onclick="@(()=>SetImage(i1,j1))" alt="" src=""/>
+						</div>
+					}
+				</div>
+			</div>
+		}
+		<button type="submit" class="btn btn-primary" onclick="@GenerateMap">Wygeneruj mape</button>
+		<table class="table">
+			<thead>
+			<tr>
+				<th>Image</th>
+				<th>waga</th>
+			</tr>
+			</thead>
+			<tbody>
+			@foreach (var t in Map.TileWeightDtos)
+			{
+				<tr>
+					<td> <img class="fix-size" src="@MapS.TilesUrl[t.TileId].Url" @onclick="@(()=> ChosenTile(t.TileId))" alt=""/> </td>
+					<td>
+						<div> @t.Weight</div>
+						
+					</td>
+				</tr>
+			}
+			</tbody>
+		</table>
+      
+	}
+}
 
 @code {
+	private readonly string tileKey = "tile_";
     protected override async void OnInitialized()
+    {
+	   
+	    await MapS.TileSets2();
+	    this.StateHasChanged();
+    }
+    private TileSetDto CurrSetDto = new TileSetDto();
+
+    private async Task CreateSetTrue()
     {
 	    await MapS.TileSets2();
     }
-
-    private void SetCurrSet(TileSetDto tileSetDto)
+    private async Task CreateSetTrue2()
+    {
+	    CurrSetDto.Id = 1;
+    }
+    private async Task SetCurrSet(TileSetDto tileSetDto)
     {
 	    
+	    Map = await MapS.PrepareNewMap(tileSetDto.Id);
+	    
+	    await MapS.GetBaseTile();
+	    await MapS.GetTilesToHash(Map.TileSetId);
+	    CurrSetDto = tileSetDto;
     }
+
+    private GeneratedMapDto Map = new GeneratedMapDto();
+    bool ok = false;
+    
+    protected async Task PrepareMap()
+    {
+	    string  url = await LocalStorageService.GetItemAsStringAsync(tileKey + 1);
+		Console.WriteLine("urlssx"+ url);
+		url = await LocalStorageService.GetItemAsync<string>(tileKey + 1);
+	    ok = true;
+	    this.StateHasChanged();
+	    for (int i = 0; i < Map.N;i++)
+	    {
+		    for (int j = 0; j < Map.M; j++)
+		    {
+			    await Js.InvokeVoidAsync("setImageUrl","imgId_"+i+"+"+j , url ,0);
+		    }
+	    }
+	  
+    }
+
+    private long IdToset = 0;
+
+    private async Task SetImage(int i, int j)
+    {
+	    if (IdToset != 0)
+	    {
+		    await Js.InvokeVoidAsync("setImageUrl", "imgId_" + i + "+" + j, MapS.TilesUrl[IdToset].Url, 0);
+		    Map.SetTileDtos.Add(new SetTileDto()
+		    {
+			    N = i, M = j, TileId = IdToset
+		    });
+	    }
+    }
+
+
+
+    private void ChosenTile(long id)
+    {
+	    IdToset = id;
+    }
+    
+    
+    private List<string[]> TilesTypes = new List<string[]>();
+    private List<long> TilesUrls = new List<long>();
+	private Tilep[][] mapOfTile;
+	PriorityQueue<int[], int> q = new PriorityQueue<int[], int>();
+	private async Task GenerateMap()
+	{
+		
+		mapOfTile = new Tilep[Map.N][];
+		for (int i = 0; i < Map.N; i++)
+		{
+			mapOfTile[i] = new Tilep[Map.M];
+		}
+		TilesTypes.Clear();
+		TilesUrls.Clear();
+		foreach (var tw in Map.TileWeightDtos)
+		{
+			if (tw.Weight != 0)
+			{
+				TilesTypes.Add(new string[] { MapS.TilesUrl[tw.TileId].P0,MapS.TilesUrl[tw.TileId].P1,MapS.TilesUrl[tw.TileId].P2,MapS.TilesUrl[tw.TileId].P3 });
+				TilesUrls.Add(tw.TileId);
+				Console.WriteLine("hejs123");
+			}
+			Console.WriteLine("hejs");
+		}
+		List<int> allPossibilities = new List<int>();
+		for (int i = 0; i < TilesTypes.Count(); i++)
+		{
+			allPossibilities.Add(i);
+		}
+		Console.WriteLine(TilesTypes.Count());
+		for (int i = 0; i < Map.N; i++)
+		{
+			for (int j = 0; j < Map.M; j++)
+			{
+				mapOfTile[i][j] = new Tilep
+				{
+					Possibilities = allPossibilities.ToList()
+				};
+			}
+		}
+		q.Clear();
+		foreach (var st in Map.SetTileDtos)
+		{
+			mapOfTile[st.N][st.M].Type = st.TileId;
+			EvaluateBeginning(st.N,st.M);
+		}
+		Console.WriteLine(TilesTypes[0][0]);
+		Console.WriteLine("hej");
+		if (q.Count == 0)
+		{
+			q.Enqueue([0,0],1);
+		}
+		
+		int[] curr;
+		while (q.Count > 0)
+		{
+			curr = q.Dequeue();
+			Console.WriteLine(curr[0]+" "+curr[1]);
+			await Evaluate(curr[0],curr[1]);
+			await this.OnAfterRenderAsync(false);
+		}
+	
+		
+	}
+
+	private void Reduce(string by, int n, int m, int direction)
+	{
+		Console.WriteLine("reduce "+by +" "+n+" "+m+" "+direction);
+		if (mapOfTile[n][m].Type != -1) return;
+		List<int> correct = new List<int>();
+		int start = direction;
+
+		bool ok;
+		foreach (var t in mapOfTile[n][m].Possibilities)
+		{
+			if (TilesTypes[t][start].Equals(by))
+			{
+				correct.Add(t);
+			}
+
+		}
+		Console.WriteLine("porpawne "+ correct.Count);
+		mapOfTile[n][m].Possibilities = correct;
+		q.Enqueue([n,m],correct.Count);
+	}
+	
+	private async Task Evaluate(int n, int m )
+	{
+		Console.WriteLine("evaliate "+n+" "+m);
+		if (mapOfTile[n][m].Type != -1) return;
+	
+		if (mapOfTile[n][m].Possibilities.Count() == 0) return;
+		long   tileId;
+	
+		Random rnd = new Random();
+		int tile = rnd.Next(mapOfTile[n][m].Possibilities.Count() );
+	
+		Console.WriteLine(tile);
+		Console.WriteLine("opce "+ mapOfTile[n][m].Possibilities.Count());
+		tile = mapOfTile[n][m].Possibilities[tile];
+		tileId = TilesUrls[tile];
+		mapOfTile[n][m].Type = tileId;
+		await Js.InvokeVoidAsync("setImageUrl", "imgId_" + n + "+" + m, MapS.TilesUrl[tileId].Url, 0);
+		
+		
+		if (n > 0)
+		{
+			Reduce( MapS.TilesUrl[tileId].P1,n-1,m,3);
+		}
+		if (m > 0)
+		{
+			Reduce( MapS.TilesUrl[tileId].P2,n,m-1,0);
+		}
+		if (n < Map.N -1)
+		{
+			Reduce( MapS.TilesUrl[tileId].P3,n+1,m,1);
+		}
+		if (m < Map.M-1)
+		{
+			Reduce( MapS.TilesUrl[tileId].P0,n,m+1,2);
+		}
+	}
+	private void  EvaluateBeginning(int n, int m )
+	{
+		
+		long   tileId =mapOfTile[n][m].Type;
+		
+		if (n > 0)
+		{
+			Reduce( MapS.TilesUrl[tileId].P1,n-1,m,3);
+		}
+		if (m > 0)
+		{
+			Reduce( MapS.TilesUrl[tileId].P2,n,m-1,0);
+		}
+		if (n < Map.N -1)
+		{
+			Reduce( MapS.TilesUrl[tileId].P3,n+1,m,1);
+		}
+		if (m < Map.M-1)
+		{
+			Reduce( MapS.TilesUrl[tileId].P0,n,m+1,2);
+		}
+	}
 }

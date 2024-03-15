@@ -121,6 +121,7 @@ public class TileService(DataContext dataContext)
    {
       GeneratedMapDto mapDto = new GeneratedMapDto
       {
+         TileSetId = tileSetId,
          TileWeightDtos = await dataContext.Tiles.Where(x => x.TileSetId == tileSetId)
             .Select(x => TileWeightMapper.NewWeightDto(x.Id, 0)).ToListAsync(),
          SetTileDtos = new List<SetTileDto>()
@@ -179,7 +180,7 @@ public class TileService(DataContext dataContext)
    
    public async Task<HandlerResult<SuccessData<TileDto>, IErrorResult>> GetBaseTile()
    {
-      Tile tile = await dataContext.Tiles.FindAsync(1);
+      Tile tile = await dataContext.Tiles.FindAsync((long)1);
       return new SuccessData<TileDto>()
       {
          Data = TileMapper.TileToDto(tile)

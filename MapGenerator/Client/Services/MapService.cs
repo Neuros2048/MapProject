@@ -10,16 +10,20 @@ namespace Client.Services;
 
 public class MapService
 {
-    public MapService(HttpClient http,ILocalStorageService localStorageService)
+    public MapService(HttpClient http,ILocalStorageService localStorageService,IJSRuntime js)
     {
         _http = http;
         _localStorageService = localStorageService;
+        _js = js;
     }
     private readonly string _controllerBase ="api/Map/";
     private readonly HttpClient _http;
     private readonly ILocalStorageService _localStorageService;
+    private readonly IJSRuntime _js;
+    private readonly string tileKey = "tile_";
+    public Dictionary<long,TileDto> TilesUrl = new Dictionary<long, TileDto>(); 
 
-    public List<TileSetDto> TileSetDtos;
+    public List<TileSetDto> TileSetDtos = new List<TileSetDto>();
     public async Task<byte[]> SendImageToServer(string url)
     {
         // Convert byte array to base64 string
@@ -75,6 +79,26 @@ public class MapService
         if (!res.IsSuccessStatusCode) return null!;
         
         return ((await res.Content.ReadFromJsonAsync<SuccessData< List<TileDto>>>())!).Data!; 
+    }
+    public async Task<bool> GetTilesToHash(long tileSetId)
+    {
+        var res = await _http.GetAsync(_controllerBase + "GetTiles?tileSetId="+tileSetId);
+        if (!res.IsSuccessStatusCode) return false;
+        foreach (var tileDto in ((await res.Content.ReadFromJsonAsync<SuccessData< List<TileDto>>>())).Data)
+        {
+            if (!TilesUrl.ContainsKey(tileDto.Id))
+            {
+                Stream stream = new MemoryStream(tileDto.Image);
+                var dotnetImageStream = new DotNetStreamReference(stream);
+                string url = await _js.InvokeAsync<string>("addImage", dotnetImageStream);
+                tileDto.Image = null;
+                tileDto.Url = url;
+                TilesUrl.Add(tileDto.Id, tileDto);
+            }
+            
+        }
+
+        return true;
     }
     
     public async Task<TileSetDto?> CreateTileSet(TileSetDto tileSetDto)
@@ -133,11 +157,20 @@ public class MapService
         return ((await res.Content.ReadFromJsonAsync<SuccessData<GeneratedMapDto>>())!).Data!; 
     }
     
-    public async Task<TileDto> GetBaseTile()
+    public async Task<bool> GetBaseTile()
     {
-        var res = await _http.GetAsync(_controllerBase + "GetBaseTile");
-        if (!res.IsSuccessStatusCode) return null!;
-        return ((await res.Content.ReadFromJsonAsync<SuccessData<TileDto>>())!).Data!; 
+        if (string.IsNullOrEmpty(await _localStorageService.GetItemAsStringAsync(tileKey + 1)))
+        {
+            var res = await _http.GetAsync(_controllerBase + "GetBaseTile");
+            if (!res.IsSuccessStatusCode) return false!;
+            var image = (await res.Content.ReadFromJsonAsync<SuccessData<TileDto>>()).Data;
+            Stream stream = new MemoryStream(image.Image);
+            var dotnetImageStream = new DotNetStreamReference(stream);
+            string url = await _js.InvokeAsync<string>("addImage", dotnetImageStream);
+            await _localStorageService.SetItemAsync(tileKey + 1, url);
+        }
+        
+        return true; 
     }
     
     
