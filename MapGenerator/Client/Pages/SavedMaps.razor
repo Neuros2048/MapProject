@@ -1,4 +1,4 @@
-﻿@page "/TestGen"
+﻿@page "/SavedMaps"
 @using Client.Services
 @using Shared.DTO
 
@@ -7,8 +7,7 @@
 @inject IJSRuntime Js
 @inject ILocalStorageService LocalStorageService
 
-<button type="submit" class="btn btn-primary" onclick="@CreateSetTrue">Stworefres</button>
-<button type="submit" class="btn btn-primary" onclick="@CreateSetTrue2">xda </button>
+
 <table class="table">
 	<thead>
 		<tr>
@@ -17,7 +16,7 @@
 		</tr>
 	</thead>
 	<tbody>
-		@foreach (var ts in MapS.TileSetDtos)
+		@foreach (var ts in _tileSetDtos)
 		{
 			<tr>
 				<td>
@@ -35,22 +34,29 @@
 
 @if (CurrSetDto.Id != 0)
 {
-	<EditForm Model="Map" OnSubmit="PrepareMap">
-		<div>
-			<label for="name">Nazwa</label>
-			<InputText id="name" @bind-Value="Map.Name" class="from-control" />
-		</div>
-		<div>
-			<label for="N">Wysokość</label>
-			<InputNumber id="N" @bind-Value="Map.N" class="from-control" />
-		</div>
-		<div>
-			<label for="M">Szerkość</label>
-			<InputNumber id="M" @bind-Value="Map.M" class="from-control" />
-		</div>
-		
-		<button type="submit" class="btn btn-primary">Potwierdz</button>
-	</EditForm>
+	<table class="table">
+		<thead>
+		<tr>
+			<th>Nazwa Mapy</th>
+			<th>Zobacz</th>
+		</tr>
+		</thead>
+		<tbody>
+		@foreach (var tm in _generatedMap)
+		{
+			<tr>
+				<td>
+					<div>@tm.Name</div> </td>
+				<td>
+					<button class="btn btn-primary"
+					        @onclick="(() => MakeMap(tm))">
+						<i class="oi oi-pencil"></i>
+					</button>
+				</td>
+			</tr>
+		}
+		</tbody>
+	</table>
 	
 	
 	@if (ok )
@@ -68,93 +74,56 @@
 								var i1 = i;
 								var j1 = j;
 							}
-							<img id="imgId_@i+@j"  @onclick="@(()=>SetImage(i1,j1))" alt="" src=""/>
+							<img id="imgId_@i+@j"   alt="" src=""/>
 						</div>
 					}
 				</div>
 			</div>
 		}
-		<button type="submit" class="btn btn-primary" onclick="@GenerateMap">Wygeneruj mape</button>
-		<table class="table">
-			<thead>
-			<tr>
-				<th>Image</th>
-				<th>waga</th>
-				<th>Zwiększ wage</th>
-				<th>Zmiejsz wage wage</th>
-			</tr>
-			</thead>
-			<tbody>
-			@for (int i = 0; i < Map.TileWeightDtos.Count; i++)
-			{
-				
-				<tr>
-					@{
-						var currI = i;
-					}
-					<td> <img class="fix-size" src="@MapS.TilesUrl[Map.TileWeightDtos[currI].TileId].Url" @onclick="@(() => ChosenTile(Map.TileWeightDtos[currI].TileId))" alt=""/> </td>
-					<td>
-						<div> @Map.TileWeightDtos[currI].Weight</div>
-
-					</td>
-					<td>
-
-						<button class="btn btn-primary"
-						        @onclick="(() => IncreaseWeight(currI))"> +
-							<i class="oi oi-pencil"></i>
-						</button>
-					</td>
-					<td>
-						<button class="btn btn-primary"
-						        @onclick="(() => DecreaseWeight(currI))"> -
-							<i class="oi oi-pencil"></i>
-						</button>
-					</td>
-				</tr>
-			}
-			</tbody>
-		</table>
-		<button type="submit" class="btn btn-primary" onclick="@SaveMap">Wygeneruj mape</button>
+		
 	}
 }
 
 @code {
 	private readonly string tileKey = "tile_";
+	private List<TileSetDto> _tileSetDtos = new List<TileSetDto>();
+	private List<GeneratedMapDto> _generatedMap = new List<GeneratedMapDto>();
     protected override async void OnInitialized()
     {
 	   
-	    await MapS.TileSets2();
+	    _tileSetDtos = await MapS.TileSets();
 	    this.StateHasChanged();
     }
     private TileSetDto CurrSetDto = new TileSetDto();
-
-    private async Task CreateSetTrue()
-    {
-	    await MapS.TileSets2();
-    }
-    private async Task CreateSetTrue2()
-    {
-	    CurrSetDto.Id = 1;
-    }
+    
     private async Task SetCurrSet(TileSetDto tileSetDto)
     {
 	    
-	    Map = await MapS.PrepareNewMap(tileSetDto.Id);
-	    
 	    await MapS.GetBaseTile();
-	    await MapS.GetTilesToHash(Map.TileSetId);
+	    await MapS.GetTilesToHash(tileSetDto.Id);
+	    _generatedMap = await MapS.GetMaps(tileSetDto.Id);
 	    CurrSetDto = tileSetDto;
     }
-
+	
     private GeneratedMapDto Map = new GeneratedMapDto();
     bool ok = false;
-    
-    protected async Task PrepareMap()
+
+    private async Task MakeMap(GeneratedMapDto generatedMapDto)
+    {
+	    ok = false;
+	    Map = await MapS.GetMap(generatedMapDto.Id);
+	    ok = true;
+	    this.StateHasChanged();
+	    await PrepareMap();
+	    await SetSettedTiles();
+	    await GenerateMap();
+    }
+
+    private async Task PrepareMap()
     {
 	    string  url = await LocalStorageService.GetItemAsStringAsync(tileKey + 1);
 		url = await LocalStorageService.GetItemAsync<string>(tileKey + 1);
 	    ok = true;
-	    Map.SetTileDtos = new List<SetTileDto>();
 	    this.StateHasChanged();
 	    for (int i = 0; i < Map.N;i++)
 	    {
@@ -166,27 +135,16 @@
 		
     }
 
-    private long IdToset = 0;
-
-    private async Task SetImage(int i, int j)
+    private async Task SetSettedTiles()
     {
-	    if (IdToset != 0)
+	    foreach (var st in Map.SetTileDtos)
 	    {
-		    await Js.InvokeVoidAsync("setImageUrl", "imgId_" + i + "+" + j, MapS.TilesUrl[IdToset].Url, 0);
-		    Map.SetTileDtos.Add(new SetTileDto()
-		    {
-			    N = i, M = j, TileId = IdToset
-		    });
+		    await Js.InvokeVoidAsync("setImageUrl", "imgId_" + st.N + "+" + st.M, MapS.TilesUrl[st.TileId].Url, 0);
 	    }
     }
+   
 
 
-
-    private void ChosenTile(long id)
-    {
-	    IdToset = id;
-    }
-    
     
     private List<TileParam> TilesTypes = new List<TileParam>();
     private List<long> TilesIds = new List<long>();
@@ -207,7 +165,6 @@
 		}
 		TilesTypes.Clear();
 		TilesIds.Clear();
-		Map.seed = (int)DateTime.Now.Ticks & 0x0000FFFF;
 		rnd = new Random(Map.seed);
 		toReaload = Map.N * Map.M / 100;
 		currReaload = 0;
@@ -388,17 +345,4 @@
 		}
 	}
 
-	private void IncreaseWeight(int i)
-	{
-		Map.TileWeightDtos[i].Weight++;
-	}
-	private void DecreaseWeight(int i)
-	{
-		Map.TileWeightDtos[i].Weight = Map.TileWeightDtos[i].Weight > 0 ? Map.TileWeightDtos[i].Weight -1 : 0;
-	}
-
-	private async Task SaveMap()
-	{
-		await MapS.SaveGeneratedMap(Map);
-	}
 }

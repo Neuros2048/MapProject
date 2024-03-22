@@ -35,7 +35,7 @@ public class PasswordValidator : ValidationAttribute
                 ErrorMessage = "Hasło musi zawierać conajmniej jedną jedną cyfre";
                 return false;
             }
-
+            /*
             if (!password.Any(IsSpecialCharacter))
             {
                 ErrorMessage = "Hasło musi zawierać znak specjalny";
@@ -49,7 +49,7 @@ public class PasswordValidator : ValidationAttribute
                     ErrorMessage = "To jest powszechne hasło użyj innego";
                     return false;
                 }
-            }
+            }*/
 
             return true;
         }

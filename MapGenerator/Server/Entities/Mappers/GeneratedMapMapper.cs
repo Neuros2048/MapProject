@@ -13,6 +13,7 @@ public static class GeneratedMapMapper
             N = generatedMapDto.N,
             M = generatedMapDto.M,
             Name = generatedMapDto.Name,
+            Seed = generatedMapDto.seed,
             TileSetId = generatedMapDto.TileSetId
         };
     }
@@ -25,6 +26,7 @@ public static class GeneratedMapMapper
             N = generatedMap.N,
             M = generatedMap.M,
             Name = generatedMap.Name,
+            seed = generatedMap.Seed,
             TileSetId = generatedMap.TileSetId
         };
     }

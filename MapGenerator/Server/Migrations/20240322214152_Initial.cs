@@ -54,6 +54,7 @@ namespace Server.Migrations
                     N = table.Column<int>(type: "int", nullable: false),
                     M = table.Column<int>(type: "int", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Seed = table.Column<int>(type: "int", nullable: false),
                     TileSetId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
@@ -125,6 +126,7 @@ namespace Server.Migrations
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    Weight = table.Column<int>(type: "int", nullable: false),
                     GeneratedMapId = table.Column<long>(type: "bigint", nullable: false),
                     TileId = table.Column<long>(type: "bigint", nullable: false)
                 },

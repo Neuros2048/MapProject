@@ -33,7 +33,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 var app = builder.Build();
-/*
+
 using (var serviceScope = builder.Services.BuildServiceProvider().CreateScope())
 {
     var dbContext = serviceScope.ServiceProvider.GetRequiredService<DataContext>();
@@ -47,7 +47,7 @@ using (var serviceScope = builder.Services.BuildServiceProvider().CreateScope())
     {
         Console.WriteLine("No pending migrations.");
     }
-}*/
+}
 
 app.UseCors(options => {
     options.AllowAnyMethod();

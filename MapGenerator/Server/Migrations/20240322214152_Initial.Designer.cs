@@ -11,7 +11,7 @@ using Server.Models;
 namespace Server.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20240313195843_Initial")]
+    [Migration("20240322214152_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -41,6 +41,9 @@ namespace Server.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Seed")
+                        .HasColumnType("int");
 
                     b.Property<long>("TileSetId")
                         .HasColumnType("bigint");
@@ -174,6 +177,9 @@ namespace Server.Migrations
 
                     b.Property<long>("TileId")
                         .HasColumnType("bigint");
+
+                    b.Property<int>("Weight")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 

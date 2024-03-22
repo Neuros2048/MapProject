@@ -10,6 +10,9 @@ public class TileWeightConfiguration : IEntityTypeConfiguration<TileWeight>
     {
         builder.HasKey(x => x.Id);
         
+        builder.Property(x => x.Weight)
+            .IsRequired();
+        
         builder.HasOne(x => x.GeneratedMap)
             .WithMany(x => x.TileWeights)
             .HasForeignKey(x => x.GeneratedMapId);

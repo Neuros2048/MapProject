@@ -3,7 +3,7 @@
 public class TileWeight
 {
     public long Id { get; set; }
-    public int Weight;
+    public int Weight { get; set; }
     public long GeneratedMapId { get; set; }
     public GeneratedMap GeneratedMap { get; set; }
     public long TileId { get; set; }

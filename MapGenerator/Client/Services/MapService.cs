@@ -159,8 +159,8 @@ public class MapService
     
     public async Task<bool> GetBaseTile()
     {
-        if (string.IsNullOrEmpty(await _localStorageService.GetItemAsStringAsync(tileKey + 1)))
-        {
+        //if (string.IsNullOrEmpty(await _localStorageService.GetItemAsStringAsync(tileKey + 1)))
+        //{
             var res = await _http.GetAsync(_controllerBase + "GetBaseTile");
             if (!res.IsSuccessStatusCode) return false!;
             var image = (await res.Content.ReadFromJsonAsync<SuccessData<TileDto>>()).Data;
@@ -168,7 +168,7 @@ public class MapService
             var dotnetImageStream = new DotNetStreamReference(stream);
             string url = await _js.InvokeAsync<string>("addImage", dotnetImageStream);
             await _localStorageService.SetItemAsync(tileKey + 1, url);
-        }
+        //}
         
         return true; 
     }

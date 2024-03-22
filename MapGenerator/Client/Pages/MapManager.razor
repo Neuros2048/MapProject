@@ -42,7 +42,7 @@
 					</td>
 					<td>
 						<button class="btn btn-primary"
-						        @onclick="(() => DeletaCurrSet(ts.Id))">
+						        @onclick="(() => DeleteCurrSet(ts.Id))">
 							<i class="oi btn-outline-danger"></i>
 						</button>
 					</td>
@@ -105,6 +105,7 @@
 			<tr>
 				<th>Image</th>
 				<th>Edytuj</th>
+				<th>Usuń</th>
 			</tr>
 			</thead>
 			<tbody>
@@ -113,10 +114,16 @@
 				<tr>
 					<td> <img src="@t.Url" alt=""/> </td>
 					<td>
-                    	<button class="btn btn-primary"
-                    	        @onclick="EditTile">
-                    		<i class="oi oi-pencil"></i>
-                    	</button>
+						<button class="btn btn-primary"
+						        @onclick="EditTile">
+							<i class="oi oi-pencil"></i>
+						</button>
+					</td>
+					<td>
+                        <button class="btn btn-primary"
+                                    @onclick="(() => DeleteTile(t.Id))">
+                            <i class="oi oi-pencil"></i>
+                        </button>
                     </td>
 				</tr>
 			}
@@ -168,7 +175,7 @@
 	    CurrSetDto = tileSetDto;
 	    
     }
-    private async Task DeletaCurrSet(long setId)
+    private async Task DeleteCurrSet(long setId)
     {
 	    await MapS.DeleteTileSet(setId);
 	    _tileSetDtos =  await MapS.TileSets();
@@ -271,15 +278,21 @@
 			    tiles.Add(creatTile);
 			    
 			    break;
+			    
 	    }
 	    
 	    
 	    imageToProces.RemoveAt(0);
+	    creatTile = new TileDto();
     }
 
    
     public void EditTile()
     {
 	    
+    }
+    public async Task DeleteTile(long tileId)
+    {
+	    await MapS.DeleteTile(tileId);
     }
 }

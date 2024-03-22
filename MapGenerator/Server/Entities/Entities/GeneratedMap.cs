@@ -6,6 +6,7 @@ public class GeneratedMap
     public int N { get; set; }
     public int M { get; set; }
     public string Name { get; set; }
+    public int Seed { get; set; }
     public long TileSetId { get; set; }
     public TileSet TileSet { get; set; }
     

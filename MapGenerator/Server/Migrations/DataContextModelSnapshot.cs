@@ -39,6 +39,9 @@ namespace Server.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("Seed")
+                        .HasColumnType("int");
+
                     b.Property<long>("TileSetId")
                         .HasColumnType("bigint");
 
@@ -171,6 +174,9 @@ namespace Server.Migrations
 
                     b.Property<long>("TileId")
                         .HasColumnType("bigint");
+
+                    b.Property<int>("Weight")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
