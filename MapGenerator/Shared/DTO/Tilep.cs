@@ -3,6 +3,7 @@
 public class Tilep
 {
     public long Type { get; set; } = -1;
+    public int WeightSum { get; set; } = 0;
 
-    public List<int>? Possibilities { get; set; } = new List<int>();
+    public List<int>? Possibilities { get; set; } = null;
 }

@@ -80,7 +80,7 @@ public class AuthService(DataContext context, IConfiguration configuration)
 
         var token = new JwtSecurityToken(
                            claims: claims,
-                           expires: DateTime.Now.AddMinutes(15),
+                           expires: DateTime.Now.AddHours(3),
         signingCredentials: creds
               );
 

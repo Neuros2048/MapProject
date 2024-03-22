@@ -1,6 +1,7 @@
-﻿@page "/MapGenerator"
+﻿@page "/TestGen"
 @using Client.Services
 @using Shared.DTO
+@using System.Text.RegularExpressions
 <h3>MapGenerator</h3>
 @inject MapService MapS
 @inject IJSRuntime Js
@@ -132,9 +133,9 @@
     protected async Task PrepareMap()
     {
 	    string  url = await LocalStorageService.GetItemAsStringAsync(tileKey + 1);
-		Console.WriteLine("urlssx"+ url);
 		url = await LocalStorageService.GetItemAsync<string>(tileKey + 1);
 	    ok = true;
+	    Map.SetTileDtos = new List<SetTileDto>();
 	    this.StateHasChanged();
 	    for (int i = 0; i < Map.N;i++)
 	    {
@@ -143,7 +144,7 @@
 			    await Js.InvokeVoidAsync("setImageUrl","imgId_"+i+"+"+j , url ,0);
 		    }
 	    }
-	  
+		
     }
 
     private long IdToset = 0;
@@ -168,10 +169,15 @@
     }
     
     
-    private List<string[]> TilesTypes = new List<string[]>();
-    private List<long> TilesUrls = new List<long>();
+    private List<TileParam> TilesTypes = new List<TileParam>();
+    private List<long> TilesIds = new List<long>();
 	private Tilep[][] mapOfTile;
-	PriorityQueue<int[], int> q = new PriorityQueue<int[], int>();
+	private PriorityQueue<int[], double> q = new PriorityQueue<int[], double>();
+	private List<int> allPossibilities = new List<int>();
+ 	private Random rnd = new Random();
+    private int toReaload;
+    private int currReaload;
+    int[] curr;
 	private async Task GenerateMap()
 	{
 		
@@ -181,31 +187,36 @@
 			mapOfTile[i] = new Tilep[Map.M];
 		}
 		TilesTypes.Clear();
-		TilesUrls.Clear();
+		TilesIds.Clear();
+		int seed = (int)DateTime.Now.Ticks & 0x0000FFFF;
+		rnd = new Random(seed);
+		toReaload = Map.N * Map.M / 100;
+		currReaload = 0;
 		foreach (var tw in Map.TileWeightDtos)
 		{
 			if (tw.Weight != 0)
 			{
-				TilesTypes.Add(new string[] { MapS.TilesUrl[tw.TileId].P0,MapS.TilesUrl[tw.TileId].P1,MapS.TilesUrl[tw.TileId].P2,MapS.TilesUrl[tw.TileId].P3 });
-				TilesUrls.Add(tw.TileId);
-				Console.WriteLine("hejs123");
+				TilesTypes.Add( new TileParam()
+				{
+					pola = new string[] { MapS.TilesUrl[tw.TileId].P0,MapS.TilesUrl[tw.TileId].P1,MapS.TilesUrl[tw.TileId].P2,MapS.TilesUrl[tw.TileId].P3 },
+					weight = tw.Weight
+				} );
+				TilesIds.Add(tw.TileId);
+			
 			}
-			Console.WriteLine("hejs");
-		}
-		List<int> allPossibilities = new List<int>();
+			
+		} 
+		allPossibilities = new List<int>();
 		for (int i = 0; i < TilesTypes.Count(); i++)
 		{
 			allPossibilities.Add(i);
 		}
-		Console.WriteLine(TilesTypes.Count());
+		
 		for (int i = 0; i < Map.N; i++)
 		{
 			for (int j = 0; j < Map.M; j++)
 			{
-				mapOfTile[i][j] = new Tilep
-				{
-					Possibilities = allPossibilities.ToList()
-				};
+				mapOfTile[i][j] = new Tilep();
 			}
 		}
 		q.Clear();
@@ -214,22 +225,21 @@
 			mapOfTile[st.N][st.M].Type = st.TileId;
 			EvaluateBeginning(st.N,st.M);
 		}
-		Console.WriteLine(TilesTypes[0][0]);
-		Console.WriteLine("hej");
+
 		if (q.Count == 0)
 		{
 			q.Enqueue([0,0],1);
+			mapOfTile[0][0].Possibilities = allPossibilities;
+			Entropy(0, 0);
 		}
 		
-		int[] curr;
+		
 		while (q.Count > 0)
 		{
 			curr = q.Dequeue();
-			Console.WriteLine(curr[0]+" "+curr[1]);
-			await Evaluate(curr[0],curr[1]);
 			
-			
-			await Task.Delay(1);
+			Console.WriteLine("kolejka :" + curr[0]+" "+curr[1]);
+			 await Evaluate(curr[0],curr[1]);
 
 		}
 	
@@ -238,42 +248,85 @@
 
 	private void Reduce(string by, int n, int m, int direction)
 	{
-		Console.WriteLine("reduce "+by +" "+n+" "+m+" "+direction);
-		if (mapOfTile[n][m].Type != -1) return;
+		if (mapOfTile[n][m].Type != -1) return ;
 		List<int> correct = new List<int>();
 		int start = direction;
-
-		bool ok;
+		if (mapOfTile[n][m].Possibilities == null) mapOfTile[n][m].Possibilities = allPossibilities;
+		
 		foreach (var t in mapOfTile[n][m].Possibilities)
 		{
-			if (TilesTypes[t][start].Equals(by))
+			if (RevCompere(TilesTypes[t].pola[start],by))
 			{
 				correct.Add(t);
 			}
 
 		}
-		Console.WriteLine("porpawne "+ correct.Count);
+
 		mapOfTile[n][m].Possibilities = correct;
-		q.Enqueue([n,m],correct.Count);
+		Console.WriteLine("do kolejki "+n+" " +m+" "+   Entropy(n,m) );
+		q.Enqueue([n,m], Entropy(n,m));
 	}
-	
+
+	private bool RevCompere(string s1, string s2)
+	{
+		if (s1.Length != s2.Length) return false;
+		int n = s1.Length -1;
+		foreach (var c in s2)
+		{
+			if (c != s1[n--]) return false;
+		}
+
+		return true;
+
+	}
+	private double Entropy(int n, int m)
+	{
+		mapOfTile[n][m].WeightSum = 0;
+		foreach (var t in mapOfTile[n][m].Possibilities)
+		{
+			mapOfTile[n][m].WeightSum += TilesTypes[t].weight;
+		}
+		double sum = mapOfTile[n][m].WeightSum;
+
+		double entropy = 0;
+		foreach (var t in mapOfTile[n][m].Possibilities)
+		{
+			entropy += TilesTypes[t].weight / sum * double.Log2(sum / TilesTypes[t].weight);
+		}
+
+		return entropy;
+
+	}
 	private async Task Evaluate(int n, int m )
 	{
-		Console.WriteLine("evaliate "+n+" "+m);
+		Console.WriteLine("evaliate "+n+" "+m + " "+mapOfTile[n][m].WeightSum);
 		if (mapOfTile[n][m].Type != -1) return;
 	
 		if (mapOfTile[n][m].Possibilities.Count() == 0) return;
 		long   tileId;
-	
-		Random rnd = new Random();
-		int tile = rnd.Next(mapOfTile[n][m].Possibilities.Count() );
-	
-		Console.WriteLine(tile);
-		Console.WriteLine("opce "+ mapOfTile[n][m].Possibilities.Count());
-		tile = mapOfTile[n][m].Possibilities[tile];
-		tileId = TilesUrls[tile];
+		
+		int tile = rnd.Next(mapOfTile[n][m].WeightSum);
+		
+
+		foreach (var t in  mapOfTile[n][m].Possibilities)
+		{
+			tile -= TilesTypes[t].weight;
+			if (tile < 0)
+			{
+				tile = t;
+				break;
+			}
+		}
+		
+		tileId = TilesIds[tile];
 		mapOfTile[n][m].Type = tileId;
 		await Js.InvokeVoidAsync("setImageUrl", "imgId_" + n + "+" + m, MapS.TilesUrl[tileId].Url, 0);
+		currReaload++;
+		if (currReaload <= toReaload)
+		{
+			currReaload = 0;
+			await Task.Delay(1);
+		}
 		
 		
 		if (n > 0)

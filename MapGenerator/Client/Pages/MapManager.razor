@@ -25,6 +25,7 @@
 			<tr>
 				<th>Nazwa zbiory</th>
 				<th>Edytuj</th>
+				<th>Usun</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -37,6 +38,12 @@
 						<button class="btn btn-primary"
 						        @onclick="(() => SetCurrSet(ts))">
 							<i class="oi oi-pencil"></i>
+						</button>
+					</td>
+					<td>
+						<button class="btn btn-primary"
+						        @onclick="(() => DeletaCurrSet(ts.Id))">
+							<i class="oi btn-outline-danger"></i>
 						</button>
 					</td>
 				</tr>
@@ -161,6 +168,13 @@
 	    CurrSetDto = tileSetDto;
 	    
     }
+    private async Task DeletaCurrSet(long setId)
+    {
+	    await MapS.DeleteTileSet(setId);
+	    _tileSetDtos =  await MapS.TileSets();
+	    sets = true;
+	    this.StateHasChanged();
+    }
     protected override async void OnInitialized()
     {
 	    _tileSetDtos =  await MapS.TileSets();
@@ -210,10 +224,10 @@
 			    tiles.Add(creatTile);
 			
 			    url = await Js.InvokeAsync<string>("rotateImage90", url);
-			    creatTile.P0 = connection[3];
-			    creatTile.P1 = connection[0];
-			    creatTile.P2 = connection[1];
-			    creatTile.P3 = connection[2];
+			    creatTile.P0 = connection[1];
+			    creatTile.P1 = connection[2];
+			    creatTile.P2 = connection[3];
+			    creatTile.P3 = connection[0];
 			    creatTile = await MapS.AddTile(creatTile, url);
 			    await LocalStorageService.SetItemAsync("tile_"+creatTile.Id, url);
 			    creatTile.Url = url;
@@ -227,10 +241,10 @@
 			    tiles.Add(creatTile);
 			
 			    url = await Js.InvokeAsync<string>("rotateImage90", url);
-			    creatTile.P0 = connection[3];
-			    creatTile.P1 = connection[0];
-			    creatTile.P2 = connection[1];
-			    creatTile.P3 = connection[2];
+			    creatTile.P0 = connection[1];
+			    creatTile.P1 = connection[2];
+			    creatTile.P2 = connection[3];
+			    creatTile.P3 = connection[0];
 			    creatTile = await MapS.AddTile(creatTile, url);
 			    await LocalStorageService.SetItemAsync("tile_"+creatTile.Id, url);
 			    creatTile.Url = url;
@@ -247,10 +261,10 @@
 			    tiles.Add(creatTile);
 			    
 			    url = await Js.InvokeAsync<string>("rotateImage90", url);
-			    creatTile.P0 = connection[1];
-			    creatTile.P1 = connection[2];
-			    creatTile.P2 = connection[3];
-			    creatTile.P3 = connection[0];
+			    creatTile.P0 = connection[3];
+			    creatTile.P1 = connection[0];
+			    creatTile.P2 = connection[1];
+			    creatTile.P3 = connection[2];
 			    creatTile = await MapS.AddTile(creatTile, url);
 			    await LocalStorageService.SetItemAsync("tile_"+creatTile.Id, url);
 			    creatTile.Url = url;
@@ -263,6 +277,7 @@
 	    imageToProces.RemoveAt(0);
     }
 
+   
     public void EditTile()
     {
 	    
