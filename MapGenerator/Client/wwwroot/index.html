@@ -104,9 +104,25 @@
             image.src = url;
             image.style.transform = 'rotate('+90*rot +'deg)';
         }
-
-        
     </script>
+    <script>
+        window.resizeCanvas = (canvasId, wight, height) => {
+            const canvas = document.getElementById(canvasId);
+            canvas.width = wight;
+            canvas.height = height;
+        };
+        window.positionCanvas = (canvasId) => {
+            const canvas = document.getElementById(canvasId);
+            const rect = canvas.getBoundingClientRect();
+            const left = rect.left + window.scrollX;
+            const top = rect.top + window.scrollY;
+            return { 'Left': left, 'Top': top  };
+            
+        };
+
+    </script>
+
+   
 </body>
 
 </html>

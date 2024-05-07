@@ -1,0 +1,101 @@
+﻿@using Client.Services
+@using Shared.DTO
+
+@inject MapService MapS
+
+
+<table class="table">
+	<thead>
+		<tr>
+			<th>Nazwa zbiory</th>
+			@if (Look)
+			{
+				<th>Zobacz</th>
+			}
+			@if (Edit)
+			{
+				<th>Edytuj</th>
+			}
+			@if (Delete)
+			{
+				<th>Usun</th>
+			}
+		</tr>
+	</thead>
+	<tbody>
+		@foreach (var ts in MapS.TileSetDtos)
+		{
+			<tr>
+				<td>
+					<div>@ts.Name</div> </td>
+				@if (Look)
+				{
+					<td>
+						<button class="btn btn-primary"
+						        @onclick="(() => ChoseToLook(ts))">
+							<i class="oi oi-pencil"></i>
+						</button>
+					</td>
+				}
+				@if (Look)
+                	{
+                		<td>
+                			<button class="btn btn-primary"
+                			        @onclick="(() => ChoseToEdit(ts))">
+                				<i class="oi oi-pencil"></i>
+                			</button>
+                		</td>
+                	}
+				@if (Look)
+                	{
+                		<td>
+                			<button class="btn btn-primary"
+                			        @onclick="(() => ChoseToDelete(ts))">
+                				<i class="oi oi-pencil"></i>
+                			</button>
+                		</td>
+                	}
+			</tr>
+		}
+	</tbody>
+</table>
+
+
+
+@code {
+	[Parameter]
+	public bool Look { get; set; }
+	[Parameter]
+	public bool Edit { get; set; }
+	[Parameter]
+	public bool Delete { get; set; }
+	[Parameter]
+    public Action<TileSetDto>? LookTileSet { get; set; }
+	[Parameter]
+	public Action<TileSetDto>? EditTileSet { get; set; }
+	[Parameter]
+	public Action<TileSetDto>? DeleteTileSet { get; set; }
+	
+	protected override async void OnInitialized()
+	{
+	   
+		await MapS.TileSets2();
+		this.StateHasChanged();
+	}
+	
+	private void ChoseToLook(TileSetDto ts)
+	{
+		LookTileSet?.Invoke(ts);
+	}
+
+	private void ChoseToEdit(TileSetDto ts)
+	{
+		EditTileSet?.Invoke(ts);
+	}
+
+	private void ChoseToDelete(TileSetDto ts)
+	{
+		DeleteTileSet?.Invoke(ts);
+	}
+
+}

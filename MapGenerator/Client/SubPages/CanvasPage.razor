@@ -1,0 +1,62 @@
+﻿
+
+@inject IJSRuntime Js
+@using Excubo.Blazor.Canvas
+
+
+<div @ref="_container" class="graphicFiled">
+    <Canvas id="canvasId"  width="800" height="800" @ref="_context" @onclick="canOn" style="border: 1px solid black"></Canvas> </div>
+
+@code {
+    private ElementReference _container;
+    private Canvas _context = null!;
+    
+    private class Position
+    {
+        public double Left { get; set; }
+        public double Top { get; set; }
+    }
+    private bool render_required = true;
+    protected override bool ShouldRender()
+    {
+        if (!render_required)
+        {
+            render_required = true;
+            return false;
+        }
+        return base.ShouldRender();
+    }
+    
+    public struct Pos
+    {
+        public int X;
+        public int Y;
+    }
+    [Parameter]
+    public Action<Pos>? OnMouseClick { get; set; }
+    async void canOn(MouseEventArgs e)
+    {
+        render_required = false;
+        Pos pos = new Pos();
+        var p = await Js.InvokeAsync<Position>("positionCanvas", "canvasId");
+     
+         pos.X = (int) Math.Round(e.ClientX- p.Left);
+         pos.Y = (int) Math.Round(e.ClientY- p.Top);
+     
+        OnMouseClick?.Invoke(pos);
+    }
+
+    public async Task SetTile(int x,int y,long tileId,int size)
+    {
+        await Js.InvokeVoidAsync("eval", $"myimage = document.getElementById('tileidurl_{tileId}')");
+        await using (var ctx = await _context.GetContext2DAsync())
+        {
+            await ctx.DrawImageAsync( "myimage", size*x, size*y,size,size);
+        }
+    }
+
+    public async Task Resize(int wight, int height)
+    {
+        await Js.InvokeVoidAsync("resizeCanvas", "canvasId", wight,height);
+    }
+}

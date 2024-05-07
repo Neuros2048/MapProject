@@ -1,8 +1,8 @@
 ﻿@page "/TestGen"
 @using Client.Services
 @using Shared.DTO
-@using Excubo.Blazor.Canvas
 
+@using Client.SubPages
 <h3>MapGenerator</h3>
 @inject MapService MapS
 @inject IJSRuntime Js
@@ -12,32 +12,11 @@
 
 <button type="submit" class="btn btn-primary" onclick="@CreateSetTrue">Stworefres</button>
 <button type="submit" class="btn btn-primary" onclick="@CreateSetTrue2">xda </button>
-<table class="table">
-	<thead>
-		<tr>
-			<th>Nazwa zbiory</th>
-			<th>Zobacz</th>
-		</tr>
-	</thead>
-	<tbody>
-		@foreach (var ts in MapS.TileSetDtos)
-		{
-			<tr>
-				<td>
-					<div>@ts.Name</div> </td>
-				<td>
-					<button class="btn btn-primary"
-					        @onclick="(() => SetCurrSet(ts))">
-						<i class="oi oi-pencil"></i>
-					</button>
-				</td>
-			</tr>
-		}
-	</tbody>
-</table>
-<div @ref="container">
-    <Canvas  width="600" height="600" @ref="_context" @onclick="canOn" style="border: 1px solid red"></Canvas>
-</div>
+
+<TileSetTable Look="true" Edit="false" Delete="false" ></TileSetTable>
+
+
+
 @if (CurrSetDto.Id != 0)
 {
 	<EditForm Model="Map" OnSubmit="PrepareMap">
@@ -56,31 +35,11 @@
 		
 		<button type="submit" class="btn btn-primary">Potwierdz</button>
 	</EditForm>
-	
+
+	<CanvasPage @ref="_context" OnMouseClick="OnMouseClick"> </CanvasPage>
 	
 	@if (ok )
 	{
-		
-		
-		
-		@for (int i = 0; i < Map.N; i++)
-		{
-			<div class="image-grid">
-				<div class="row">
-              
-					@for (int j = 0; j < Map.M; j++)
-					{
-						<div class="col">
-							@{
-								var i1 = i;
-								var j1 = j;
-							}
-							<img id="imgId_@i+@j"  @onclick="@(()=>SetImage(i1,j1))" alt="" src=""/>
-						</div>
-					}
-				</div>
-			</div>
-		}
 		
 		@for (int i = 0; i <  Map.TileWeightDtos.Count; i++)
 		{
@@ -133,12 +92,7 @@
 
 @code {
 	private readonly string tileKey = "tile_";
-    protected override async void OnInitialized()
-    {
-	   
-	    await MapS.TileSets2();
-	    this.StateHasChanged();
-    }
+    
     private TileSetDto CurrSetDto = new TileSetDto();
 
     private async Task CreateSetTrue()
@@ -151,49 +105,7 @@
     }
     
     private ElementReference container;
-    private Canvas _context;
-    private Excubo.Blazor.Canvas.Contexts.Context2D ctx1;
-    private int mousex;
-    private int mousey;
-   
-    private class Position
-    {
-	    public double Left { get; set; }
-	    public double Top { get; set; }
-    }
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-	    if (firstRender)
-	    {
-		    ctx1 = await _context.GetContext2DAsync();
-		    // initialize settings
-		    await ctx1.GlobalCompositeOperationAsync(CompositeOperation.Source_Over);
-		    
-	    }
-    }
-    
-    async void canOn(MouseEventArgs e)
-    {
-	    Console.WriteLine("hssa");
-	    render_required = false;
-	    var p = await Js.InvokeAsync<Position>("eval", $"let e = document.querySelector('[_bl_{container.Id}=\"\"]'); e = e.getBoundingClientRect(); e = {{ 'Left': e.x, 'Top': e.y }}; e");
-         mousex = (int)(e.ClientX - p.Left);
-         mousey = (int)(e.ClientY - p.Top);
-        Console.WriteLine(mousex +" " + mousey);
-    }
-    private bool render_required = true;
-    protected override bool ShouldRender()
-    {
-	    if (!render_required)
-	    {
-		    render_required = true;
-		    return false;
-	    }
-	    return base.ShouldRender();
-    }
-
-    
-    
+    private CanvasPage _context;
     
     private async Task SetCurrSet(TileSetDto tileSetDto)
     {
@@ -203,6 +115,9 @@
 	    await MapS.GetBaseTile();
 	    await MapS.GetTilesToHash(Map.TileSetId);
 	    CurrSetDto = tileSetDto;
+	    Map.N = 10;
+	    Map.M = 10;
+	    await PrepareMap();
     }
 
     private GeneratedMapDto Map = new GeneratedMapDto();
@@ -210,37 +125,34 @@
     
     protected async Task PrepareMap()
     {
+	    
 	    string  url = await LocalStorageService.GetItemAsStringAsync(tileKey + 1);
 		url = await LocalStorageService.GetItemAsync<string>(tileKey + 1);
 	    ok = true;
 	    Map.SetTileDtos = new List<SetTileDto>();
 	    this.StateHasChanged();
-	    for (int i = 0; i < Map.N;i++)
-	    {
-		    for (int j = 0; j < Map.M; j++)
-		    {
-			    await Js.InvokeVoidAsync("setImageUrl","imgId_"+i+"+"+j , url ,0);
-		    }
-	    }
+	    await _context.Resize(Map.M * 10 , Map.N * 10);
+	    
 		
     }
 
     private long IdToset = 0;
-
-    private async Task SetImage(int i, int j)
+    private async void OnMouseClick(CanvasPage.Pos pos)
     {
-	    if (IdToset != 0)
-	    {
-		    await Js.InvokeVoidAsync("setImageUrl", "imgId_" + i + "+" + j, MapS.TilesUrl[IdToset].Url, 0);
-		    Map.SetTileDtos.Add(new SetTileDto()
-		    {
-			    N = i, M = j, TileId = IdToset
-		    });
-	    }
+	     
+	    pos.X /= 10;
+	    pos.Y /= 10;
+	    pos.X = pos.X < 0 ? 0 : pos.X;
+	    pos.Y = pos.Y < 0 ? 0 : pos.Y;
+	    pos.X = pos.X >= Map.N ? Map.N -1 : pos.X;
+	    pos.Y = pos.Y >= Map.M ? Map.M -1 : pos.Y;
+	    await _context.SetTile(pos.X, pos.Y, IdToset, 10);
+	     Map.SetTileDtos.Add(new SetTileDto()
+	     {
+	      N = pos.Y, M = pos.X, TileId = IdToset
+	     });
     }
-
-
-
+    
     private void ChosenTile(long id)
     {
 	    IdToset = id;
@@ -316,7 +228,7 @@
 		{
 			curr = q.Dequeue();
 			
-			Console.WriteLine("kolejka :" + curr[0]+" "+curr[1]);
+	
 			 await Evaluate(curr[0],curr[1]);
 
 		}
@@ -341,7 +253,7 @@
 		}
 
 		mapOfTile[n][m].Possibilities = correct;
-		Console.WriteLine("do kolejki "+n+" " +m+" "+   Entropy(n,m) );
+	
 		q.Enqueue([n,m], Entropy(n,m));
 	}
 
@@ -377,7 +289,7 @@
 	}
 	private async Task Evaluate(int n, int m )
 	{
-		Console.WriteLine("evaliate "+n+" "+m + " "+mapOfTile[n][m].WeightSum);
+		
 		if (mapOfTile[n][m].Type != -1) return;
 	
 		if (mapOfTile[n][m].Possibilities.Count() == 0) return;
@@ -398,18 +310,8 @@
 		
 		tileId = TilesIds[tile];
 		mapOfTile[n][m].Type = tileId;
-		await Js.InvokeVoidAsync("setImageUrl", "imgId_" + n + "+" + m, MapS.TilesUrl[tileId].Url, 0);
-		
-		
-		//await Js.InvokeVoidAsync("eval", $"myimage = {MapS.TilesUrl[tileId].Url}");
-		await Js.InvokeVoidAsync("eval", $"myimage = document.getElementById('tileidurl_{tileId}')");
-		await using (var ctx = await _context.GetContext2DAsync())
-		{
-				await ctx.DrawImageAsync( "myimage", 10*m, 10*n,10,10);
-				//await ctx.FillRectAsync(10 * m, 10 * n, 10, 10);
 
-		}
-		
+		await _context.SetTile(m, n, tileId,10);
 		
 		currReaload++;
 		if (currReaload <= toReaload)
@@ -472,4 +374,6 @@
 	{
 		await MapS.SaveGeneratedMap(Map);
 	}
+	
+
 }
