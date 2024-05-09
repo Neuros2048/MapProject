@@ -1,0 +1,55 @@
+﻿@using Shared.DTO
+@using Client.Services
+
+@inject MapService MapS
+@inject IJSRuntime Js
+@if (_chosen)
+{
+	<table class="table">
+		<thead>
+		<tr>
+			<th>Nazwa Mapy</th>
+			<th>Zobacz</th>
+		</tr>
+		</thead>
+		<tbody>
+		@foreach (var tm in _generatedMap)
+		{
+			<tr>
+				<td>
+					<div>@tm.Name</div> </td>
+				<td>
+					<button class="btn btn-primary"
+					        @onclick="(() => SetMap(tm))">
+						<i class="oi oi-pencil"></i>
+					</button>
+				</td>
+			</tr>
+		}
+		</tbody>
+	</table>
+
+}
+
+@code {
+	private List<GeneratedMapDto> _generatedMap = new List<GeneratedMapDto>();
+	[Parameter]
+	public Action<GeneratedMapDto>? ChosenMap { get; set; }
+
+	private bool _chosen = false;
+	public async Task SetCurrSet(TileSetDto tileSetDto)
+	{
+	    
+		await MapS.GetBaseTile();
+		await MapS.GetTilesToHash(tileSetDto.Id);
+		_generatedMap = await MapS.GetMaps(tileSetDto.Id);
+		_chosen = true;
+		StateHasChanged();
+	}
+
+	private void SetMap(GeneratedMapDto generatedMapDto)
+	{
+		ChosenMap?.Invoke(generatedMapDto);
+	}
+
+}

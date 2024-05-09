@@ -4,8 +4,8 @@
 @inject MapService MapS
 
 
-<table class="table">
-	<thead>
+<table class="table table-striped table-bordered table-hover">
+	<thead class="table-dark">
 		<tr>
 			<th>Nazwa zbiory</th>
 			@if (Look)
@@ -37,7 +37,7 @@
 						</button>
 					</td>
 				}
-				@if (Look)
+				@if (Edit)
                 	{
                 		<td>
                 			<button class="btn btn-primary"
@@ -46,7 +46,7 @@
                 			</button>
                 		</td>
                 	}
-				@if (Look)
+				@if (Delete)
                 	{
                 		<td>
                 			<button class="btn btn-primary"

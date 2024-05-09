@@ -27,8 +27,6 @@ a, .btn-link {
     border-color: #1861ac;
 }
 .graphicFiled {
-    display: flex;
-    flex-wrap: wrap;
     justify-content: center;
 }
 

@@ -1,0 +1,75 @@
+﻿@using Shared.DTO
+@using Client.Services
+@inject MapService MapS
+
+@for (int i = 0; i <  Map.TileWeightDtos.Count; i++)
+{
+	<img id="tileidurl_@Map.TileWeightDtos[@i].TileId" width="10" height="10" style="display:none" src="@MapS.TilesUrl[Map.TileWeightDtos[@i].TileId].Url" />
+}
+<button type="submit" class="btn btn-primary" onclick="@GenerateMap">Wygeneruj mape</button>
+<table class="table">
+	<thead>
+	<tr>
+		<th>Image</th>
+		<th>waga</th>
+		<th>Zwiększ wage</th>
+		<th>Zmiejsz wage wage</th>
+	</tr>
+	</thead>
+	<tbody>
+	@for (int i = 0; i < Map.TileWeightDtos.Count; i++)
+	{
+		
+		<tr>
+			@{
+				var currI = i;
+			}
+			<td> <img class="fix-size" src="@MapS.TilesUrl[Map.TileWeightDtos[currI].TileId].Url" @onclick="@(() => ChosenTile(Map.TileWeightDtos[currI].TileId))" alt=""/> </td>
+			<td>			
+				<div> @Map.TileWeightDtos[currI].Weight</div>
+
+			</td>
+			<td>
+
+				<button class="btn btn-primary"
+				        @onclick="(() => IncreaseWeight(currI))"> +
+					<i class="oi oi-pencil"></i>
+				</button>
+			</td>
+			<td>
+				<button class="btn btn-primary"
+				        @onclick="(() => DecreaseWeight(currI))"> -
+					<i class="oi oi-pencil"></i>
+				</button>
+			</td>
+		</tr>
+	}
+	</tbody>
+</table>
+<button type="submit" class="btn btn-primary" onclick="@SaveMap">Zapisz mape</button>
+@code {
+	
+	[Parameter] public GeneratedMapDto Map { get; set; } = new GeneratedMapDto();
+	[Parameter] public Action? GenerateMap { get; set; }
+	
+	
+	private void IncreaseWeight(int i)
+	{
+		Map.TileWeightDtos[i].Weight++;
+	}
+	private void DecreaseWeight(int i)
+	{
+		Map.TileWeightDtos[i].Weight = Map.TileWeightDtos[i].Weight > 0 ? Map.TileWeightDtos[i].Weight -1 : 0;
+	}
+	private async Task SaveMap()
+	{
+		await MapS.SaveGeneratedMap(Map);
+	}
+	
+	private Task ChosenTile(long tileId)
+	{
+		throw new NotImplementedException();
+	}
+	
+	
+}

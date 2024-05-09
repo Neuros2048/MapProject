@@ -1,103 +1,14 @@
-﻿@page "/SavedMaps"
+﻿@using Shared.DTO
 @using Client.Services
-@using Shared.DTO
-@using Client.SubPages
 
-<h3>MapGenerator</h3>
 @inject MapService MapS
-@inject IJSRuntime Js
-@inject ILocalStorageService LocalStorageService
-
-
-<TileSetTable Look="true"  LookTileSet="@SetCurrSet" ></TileSetTable>
-<SaveMapTable @ref="_saveMapTable" ChosenMap="MakeMap"> </SaveMapTable>
-@if (CurrSetDto.Id != 0)
-{
-	
-	@if (ok )
-	{
-
-		@for (int i = 0; i < Map.N; i++)
-		{
-			<div class="image-grid">
-				<div class="row">
-              
-					@for (int j = 0; j < Map.M; j++)
-					{
-						<div class="col">
-							@{
-								var i1 = i;
-								var j1 = j;
-							}
-							<img id="imgId_@i+@j"   alt="" src=""/>
-						</div>
-					}
-				</div>
-			</div>
-		}
-		
-	}
-}
-
 @code {
-	private readonly string tileKey = "tile_";
-	private List<TileSetDto> _tileSetDtos = new List<TileSetDto>();
-	private SaveMapTable? _saveMapTable;
 	
-    protected override async void OnInitialized()
-    {
-	   
-	    _tileSetDtos = await MapS.TileSets();
-	    this.StateHasChanged();
-    }
-    private TileSetDto CurrSetDto = new TileSetDto();
     
-    private async void SetCurrSet(TileSetDto tileSetDto)
-    {
-	    await _saveMapTable.SetCurrSet(tileSetDto);
-	    CurrSetDto = tileSetDto;
-    }
-	
     private GeneratedMapDto Map = new GeneratedMapDto();
-    bool ok = false;
-
-    private async void MakeMap(GeneratedMapDto generatedMapDto)
-    {
-	    ok = false;
-	    Map = await MapS.GetMap(generatedMapDto.Id);
-	    ok = true;
-	    this.StateHasChanged();
-	    await PrepareMap();
-	    await SetSettedTiles();
-	    await GenerateMap();
-    }
-
-    private async Task PrepareMap()
-    {
-	    string  url = await LocalStorageService.GetItemAsStringAsync(tileKey + 1);
-		url = await LocalStorageService.GetItemAsync<string>(tileKey + 1);
-	    ok = true;
-	    this.StateHasChanged();
-	    for (int i = 0; i < Map.N;i++)
-	    {
-		    for (int j = 0; j < Map.M; j++)
-		    {
-			    await Js.InvokeVoidAsync("setImageUrl","imgId_"+i+"+"+j , url ,0);
-		    }
-	    }
-		
-    }
-
-    private async Task SetSettedTiles()
-    {
-	    foreach (var st in Map.SetTileDtos)
-	    {
-		    await Js.InvokeVoidAsync("setImageUrl", "imgId_" + st.N + "+" + st.M, MapS.TilesUrl[st.TileId].Url, 0);
-	    }
-    }
    
-
-
+    [Parameter]
+    public Action<SetTileDto> TileToSet { get; set; }
     
     private List<TileParam> TilesTypes = new List<TileParam>();
     private List<long> TilesIds = new List<long>();
@@ -108,9 +19,9 @@
     private int toReaload;
     private int currReaload;
     int[] curr;
-	private async Task GenerateMap()
+    
+	public async void GenerateMap()
 	{
-		
 		mapOfTile = new Tilep[Map.N][];
 		for (int i = 0; i < Map.N; i++)
 		{
@@ -118,6 +29,7 @@
 		}
 		TilesTypes.Clear();
 		TilesIds.Clear();
+		Map.seed = (int)DateTime.Now.Ticks & 0x0000FFFF;
 		rnd = new Random(Map.seed);
 		toReaload = Map.N * Map.M / 100;
 		currReaload = 0;
@@ -167,7 +79,7 @@
 		{
 			curr = q.Dequeue();
 			
-			Console.WriteLine("kolejka :" + curr[0]+" "+curr[1]);
+	
 			 await Evaluate(curr[0],curr[1]);
 
 		}
@@ -192,7 +104,7 @@
 		}
 
 		mapOfTile[n][m].Possibilities = correct;
-		Console.WriteLine("do kolejki "+n+" " +m+" "+   Entropy(n,m) );
+	
 		q.Enqueue([n,m], Entropy(n,m));
 	}
 
@@ -228,7 +140,7 @@
 	}
 	private async Task Evaluate(int n, int m )
 	{
-		Console.WriteLine("evaliate "+n+" "+m + " "+mapOfTile[n][m].WeightSum);
+		
 		if (mapOfTile[n][m].Type != -1) return;
 	
 		if (mapOfTile[n][m].Possibilities.Count() == 0) return;
@@ -249,7 +161,14 @@
 		
 		tileId = TilesIds[tile];
 		mapOfTile[n][m].Type = tileId;
-		await Js.InvokeVoidAsync("setImageUrl", "imgId_" + n + "+" + m, MapS.TilesUrl[tileId].Url, 0);
+		TileToSet?.Invoke(new SetTileDto()
+		{
+			N = n,
+			M=m,
+			TileId = tileId
+		});
+		
+		
 		currReaload++;
 		if (currReaload <= toReaload)
 		{
@@ -297,5 +216,4 @@
 			Reduce( MapS.TilesUrl[tileId].P0,n,m+1,2);
 		}
 	}
-
 }
