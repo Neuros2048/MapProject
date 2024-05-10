@@ -14,7 +14,6 @@
 <button type="submit" class="btn btn-primary" onclick="@CreateSetTrue2">xda </button>
 
 <TileSetTable Look="true" Edit="false" Delete="false" LookTileSet="@SetCurrSet" ></TileSetTable>
-
 @if (CurrSetDto.Id != 0)
 {
 	<EditForm Model="Map" OnSubmit="PrepareMap">
@@ -33,7 +32,8 @@
 		
 		<button type="submit" class="btn btn-primary">Potwierdz</button>
 	</EditForm>
-
+	
+	
 	<CanvasPage @ref="_context" OnMouseClick="OnMouseClick"> </CanvasPage>
 	
 	@if (ok )
@@ -41,6 +41,7 @@
 		<TileWeightSetting @ref="_tileWeightSetting"  Map="@Map" GenerateMap="@GenerateMap"></TileWeightSetting>
 	}
 }
+<TileMapSolver @ref="_tileMapSolver" Map="@Map" TileToSet="SetTile"> </TileMapSolver>
 
 
 @code {
@@ -61,11 +62,12 @@
     private CanvasPage _context;
     private TileWeightSetting? _tileWeightSetting;
     private GeneratedMapDto Map = new GeneratedMapDto();
+    private TileMapSolver? _tileMapSolver;
+    private bool ok = false;
     private async void SetCurrSet(TileSetDto tileSetDto)
     {
 	    
 	    Map = await MapS.PrepareNewMap(tileSetDto.Id);
-	    
 	    await MapS.GetBaseTile();
 	    await MapS.GetTilesToHash(Map.TileSetId);
 	    CurrSetDto = tileSetDto;
@@ -75,7 +77,7 @@
     }
 
    
-    bool ok = false;
+    
     
     protected async Task PrepareMap()
     {
@@ -101,221 +103,24 @@
 	    pos.X = pos.X >= Map.N ? Map.N -1 : pos.X;
 	    pos.Y = pos.Y >= Map.M ? Map.M -1 : pos.Y;
 	    await _context.SetTile(pos.X, pos.Y, IdToset, 10);
-	     Map.SetTileDtos.Add(new SetTileDto()
+	    Map.SetTileDtos.Add(new SetTileDto()
 	     {
 	      N = pos.Y, M = pos.X, TileId = IdToset
 	     });
     }
-    
-    private void ChosenTile(long id)
+
+    private async void SetTile(SetTileDto setTileDto)
     {
-	    IdToset = id;
+	    await _context.SetTile(setTileDto.M, setTileDto.N, setTileDto.TileId,10);    
+    }
+
+    private async void GenerateMap()
+    {
+	    Map.seed = -1;
+	    await _tileMapSolver.GenerateMap();
     }
     
     
-    private List<TileParam> TilesTypes = new List<TileParam>();
-    private List<long> TilesIds = new List<long>();
-	private Tilep[][] mapOfTile;
-	private PriorityQueue<int[], double> q = new PriorityQueue<int[], double>();
-	private List<int> allPossibilities = new List<int>();
- 	private Random rnd = new Random();
-    private int toReaload;
-    private int currReaload;
-    int[] curr;
-    
-	private async void GenerateMap()
-	{
-		
-		mapOfTile = new Tilep[Map.N][];
-		for (int i = 0; i < Map.N; i++)
-		{
-			mapOfTile[i] = new Tilep[Map.M];
-		}
-		TilesTypes.Clear();
-		TilesIds.Clear();
-		Map.seed = (int)DateTime.Now.Ticks & 0x0000FFFF;
-		rnd = new Random(Map.seed);
-		toReaload = Map.N * Map.M / 100;
-		currReaload = 0;
-		foreach (var tw in Map.TileWeightDtos)
-		{
-			if (tw.Weight != 0)
-			{
-				TilesTypes.Add( new TileParam()
-				{
-					pola = new string[] { MapS.TilesUrl[tw.TileId].P0,MapS.TilesUrl[tw.TileId].P1,MapS.TilesUrl[tw.TileId].P2,MapS.TilesUrl[tw.TileId].P3 },
-					weight = tw.Weight
-				} );
-				TilesIds.Add(tw.TileId);
-			
-			}
-			
-		} 
-		allPossibilities = new List<int>();
-		for (int i = 0; i < TilesTypes.Count(); i++)
-		{
-			allPossibilities.Add(i);
-		}
-		
-		for (int i = 0; i < Map.N; i++)
-		{
-			for (int j = 0; j < Map.M; j++)
-			{
-				mapOfTile[i][j] = new Tilep();
-			}
-		}
-		q.Clear();
-		foreach (var st in Map.SetTileDtos)
-		{
-			mapOfTile[st.N][st.M].Type = st.TileId;
-			EvaluateBeginning(st.N,st.M);
-		}
-
-		if (q.Count == 0)
-		{
-			q.Enqueue([0,0],1);
-			mapOfTile[0][0].Possibilities = allPossibilities;
-			Entropy(0, 0);
-		}
-		
-		
-		while (q.Count > 0)
-		{
-			curr = q.Dequeue();
-			
-	
-			 await Evaluate(curr[0],curr[1]);
-
-		}
-	
-		
-	}
-
-	private void Reduce(string by, int n, int m, int direction)
-	{
-		if (mapOfTile[n][m].Type != -1) return ;
-		List<int> correct = new List<int>();
-		int start = direction;
-		if (mapOfTile[n][m].Possibilities == null) mapOfTile[n][m].Possibilities = allPossibilities;
-		
-		foreach (var t in mapOfTile[n][m].Possibilities)
-		{
-			if (RevCompere(TilesTypes[t].pola[start],by))
-			{
-				correct.Add(t);
-			}
-
-		}
-
-		mapOfTile[n][m].Possibilities = correct;
-	
-		q.Enqueue([n,m], Entropy(n,m));
-	}
-
-	private bool RevCompere(string s1, string s2)
-	{
-		if (s1.Length != s2.Length) return false;
-		int n = s1.Length -1;
-		foreach (var c in s2)
-		{
-			if (c != s1[n--]) return false;
-		}
-
-		return true;
-
-	}
-	private double Entropy(int n, int m)
-	{
-		mapOfTile[n][m].WeightSum = 0;
-		foreach (var t in mapOfTile[n][m].Possibilities)
-		{
-			mapOfTile[n][m].WeightSum += TilesTypes[t].weight;
-		}
-		double sum = mapOfTile[n][m].WeightSum;
-
-		double entropy = 0;
-		foreach (var t in mapOfTile[n][m].Possibilities)
-		{
-			entropy += TilesTypes[t].weight / sum * double.Log2(sum / TilesTypes[t].weight);
-		}
-
-		return entropy;
-
-	}
-	private async Task Evaluate(int n, int m )
-	{
-		
-		if (mapOfTile[n][m].Type != -1) return;
-	
-		if (mapOfTile[n][m].Possibilities.Count() == 0) return;
-		long   tileId;
-		
-		int tile = rnd.Next(mapOfTile[n][m].WeightSum);
-		
-
-		foreach (var t in  mapOfTile[n][m].Possibilities)
-		{
-			tile -= TilesTypes[t].weight;
-			if (tile < 0)
-			{
-				tile = t;
-				break;
-			}
-		}
-		
-		tileId = TilesIds[tile];
-		mapOfTile[n][m].Type = tileId;
-
-		await _context.SetTile(m, n, tileId,10);
-		
-		currReaload++;
-		if (currReaload <= toReaload)
-		{
-			currReaload = 0;
-			await Task.Delay(1);
-		}
-		
-		
-		if (n > 0)
-		{
-			Reduce( MapS.TilesUrl[tileId].P1,n-1,m,3);
-		}
-		if (m > 0)
-		{
-			Reduce( MapS.TilesUrl[tileId].P2,n,m-1,0);
-		}
-		if (n < Map.N -1)
-		{
-			Reduce( MapS.TilesUrl[tileId].P3,n+1,m,1);
-		}
-		if (m < Map.M-1)
-		{
-			Reduce( MapS.TilesUrl[tileId].P0,n,m+1,2);
-		}
-	}
-	private void  EvaluateBeginning(int n, int m )
-	{
-		
-		long   tileId =mapOfTile[n][m].Type;
-		
-		if (n > 0)
-		{
-			Reduce( MapS.TilesUrl[tileId].P1,n-1,m,3);
-		}
-		if (m > 0)
-		{
-			Reduce( MapS.TilesUrl[tileId].P2,n,m-1,0);
-		}
-		if (n < Map.N -1)
-		{
-			Reduce( MapS.TilesUrl[tileId].P3,n+1,m,1);
-		}
-		if (m < Map.M-1)
-		{
-			Reduce( MapS.TilesUrl[tileId].P0,n,m+1,2);
-		}
-	}
-
 	
 
 	

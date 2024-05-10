@@ -1,0 +1,97 @@
+﻿<h3>CanvasPolygon</h3>
+
+@inject IJSRuntime Js
+@using Excubo.Blazor.Canvas
+
+
+<div @ref="_container" class="graphicFiled">
+    <Canvas id="canvasId"  width="@width" height="@height" @ref="_context" @onclick="OnClick" style="border: 1px solid black"></Canvas> </div>
+
+@code {
+    private ElementReference _container;
+    private Canvas _context = null!;
+    private bool render_required = true;
+    private int width = 800;
+    private int height = 800;
+    
+    private class Position
+    {
+        public double Left { get; set; }
+        public double Top { get; set; }
+    }
+   
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var ctx1 = await _context.GetContext2DAsync();
+            await ctx1.GlobalCompositeOperationAsync(CompositeOperation.Source_Over);
+            await ctx1.StrokeStyleAsync("red");
+            await ctx1.LineWidthAsync(3);
+            await ctx1.LineJoinAsync(LineJoin.Round);
+            await ctx1.LineCapAsync(LineCap.Round);
+            
+        }
+    }
+
+    protected override bool ShouldRender()
+    {
+        if (!render_required)
+        {
+            render_required = true;
+            return false;
+        }
+        return base.ShouldRender();
+    }
+    
+    public struct Pos
+    {
+        public int X;
+        public int Y;
+    }
+    [Parameter]
+    public Action<Pos>? OnMouseClick { get; set; }
+    async void OnClick(MouseEventArgs e)
+    {
+        render_required = false;
+        Pos pos = new Pos();
+        var p = await Js.InvokeAsync<Position>("positionCanvas", "canvasId");
+     
+         pos.X = (int) Math.Round(e.ClientX- p.Left);
+         pos.Y = (int) Math.Round(e.ClientY- p.Top);
+     
+        OnMouseClick?.Invoke(pos);
+    }
+    
+    public async Task Resize(int width, int height)
+    {
+        await Js.InvokeVoidAsync("resizeCanvas", "canvasId", width,height);
+        this.width = width;
+        this.height = height;
+    }
+
+    public async Task ClearMap()
+    {
+        await using var ctx = await _context.GetContext2DAsync();
+        await ctx.ClearRectAsync(0, 0, width, height);
+    }
+
+    public async Task DrawPoint(int x, int y)
+    {
+        await using var ctx = await _context.GetContext2DAsync();
+        await ctx.BeginPathAsync();
+        await ctx.MoveToAsync(x, y);
+        await ctx.LineToAsync(x, y);
+        await ctx.StrokeAsync();
+    }
+
+    public  int GetWight()
+    {
+        return width;
+    }
+
+    public int GetHeight()
+    {
+        return height;
+    }
+}

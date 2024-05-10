@@ -1,0 +1,33 @@
+﻿@page "/PolygonMap"
+@using Client.SubPages
+<h3>PolygonMap</h3>
+<button type="submit" class="btn btn-primary" onclick="@GenMap">Niech isę stanie </button>
+<CanvasPolygon @ref="_canvasPolygon" OnMouseClick="OnMouseClick"></CanvasPolygon>
+<button type="submit" class="btn btn-primary" onclick="@Clear">Wyczysc </button>
+
+@code {
+    private CanvasPolygon _canvasPolygon = null!;
+
+    private async void OnMouseClick(CanvasPolygon.Pos pos)
+    {
+        await _canvasPolygon.DrawPoint(pos.X, pos.Y);
+    }
+
+    private async void GenMap()
+    {
+        Random rnd;
+        int seed = (int)DateTime.Now.Ticks & 0x0000FFFF;
+        rnd = new Random(seed);
+        int wight = _canvasPolygon.GetWight();
+        int height = _canvasPolygon.GetHeight();
+        for (int i = 0; i < 100; i++)
+        {
+            await _canvasPolygon.DrawPoint(rnd.Next(wight), rnd.Next(height));
+        }
+    }
+
+    private async void Clear()
+    {
+        await _canvasPolygon.ClearMap();
+    }
+}

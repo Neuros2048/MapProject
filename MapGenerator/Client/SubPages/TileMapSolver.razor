@@ -4,8 +4,8 @@
 @inject MapService MapS
 @code {
 	
-    
-    private GeneratedMapDto Map = new GeneratedMapDto();
+	[Parameter]
+    public GeneratedMapDto Map { get; set; }
    
     [Parameter]
     public Action<SetTileDto> TileToSet { get; set; }
@@ -20,7 +20,7 @@
     private int currReaload;
     int[] curr;
     
-	public async void GenerateMap()
+	public async Task GenerateMap()
 	{
 		mapOfTile = new Tilep[Map.N][];
 		for (int i = 0; i < Map.N; i++)
@@ -29,7 +29,7 @@
 		}
 		TilesTypes.Clear();
 		TilesIds.Clear();
-		Map.seed = (int)DateTime.Now.Ticks & 0x0000FFFF;
+		if(Map.seed == -1) Map.seed = (int)DateTime.Now.Ticks & 0x0000FFFF;
 		rnd = new Random(Map.seed);
 		toReaload = Map.N * Map.M / 100;
 		currReaload = 0;
