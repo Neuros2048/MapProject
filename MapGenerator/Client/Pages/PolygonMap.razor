@@ -1,8 +1,14 @@
 ﻿@page "/PolygonMap"
 @using Client.SubPages
+@using System.Numerics
+@using System.Drawing
+@using Client.Logic
+@using Client.Services
+@inject PolygonMapService Pms
 <h3>PolygonMap</h3>
 <button type="submit" class="btn btn-primary" onclick="@GenMap">Niech isę stanie </button>
-<CanvasPolygon @ref="_canvasPolygon" OnMouseClick="OnMouseClick"></CanvasPolygon>
+<div  class="graphicFiled">
+<CanvasPolygon @ref="_canvasPolygon" OnMouseClick="OnMouseClick"></CanvasPolygon></div>
 <button type="submit" class="btn btn-primary" onclick="@Clear">Wyczysc </button>
 
 @code {
@@ -20,14 +26,44 @@
         rnd = new Random(seed);
         int wight = _canvasPolygon.GetWight();
         int height = _canvasPolygon.GetHeight();
-        for (int i = 0; i < 100; i++)
+        Console.WriteLine("hej");
+        await _canvasPolygon.DrawPoint(400,400);
+        int pn =10;
+        
+        List<PolygonMapService.Point> points = new List<PolygonMapService.Point>();
+        for (int i = 0; i < pn; i++)
         {
-            await _canvasPolygon.DrawPoint(rnd.Next(wight), rnd.Next(height));
+            points.Add( new PolygonMapService.Point(rnd.Next(wight), rnd.Next(height)));
+            //await _canvasPolygon.DrawPoint(rnd.Next(wight), rnd.Next(height));
         }
+        var res = Pms.Solve(points);
+        
+
+    /*
+        foreach (var r in res)
+        {
+            for (int i = 1; i < r.vertices.Count; i++)
+            {
+                Console.WriteLine(r.vertices[i].x );
+            }
+        }*/
+       
+        
+        
     }
 
     private async void Clear()
     {
         await _canvasPolygon.ClearMap();
     }
+
+   
+
+    
+    
+    
+    
+    
+    
+    
 }

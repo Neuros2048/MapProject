@@ -1,0 +1,50 @@
+﻿@using Client.Services
+<h3>VoronoiSolver</h3>
+
+@code {
+
+    public struct Point
+    {
+        public double x, y;
+        public Point(double x, double y)
+        {
+            this.x = x;
+            this.y = y;
+        }
+    }
+ 
+// Define a structure for a Voronoi region
+    public struct Region
+    {
+        public Point site; // The site that this region is based on
+        public List<Point> vertices; // The vertices of this region
+    }
+ 
+    public class Program
+    {
+        // Function to generate Voronoi regions for a given set of points
+        public static List<Region> VoronoiSweepLine(List<Point> points)
+        {
+            int n = points.Count;
+            List<Region> regions = new List<Region>(new Region[n]);
+ 
+            // For each point, create a region with the site at (0, 0)
+            for (int i = 0; i < n; ++i)
+            {
+                Region region = new Region { site = new Point { x = 0, y = 0 }, vertices = new List<Point>() };
+                regions[i] = region;
+            }
+ 
+            return regions;
+        }
+ 
+        public List<Region> Solve(List<Point> points)
+        {
+           
+            return  VoronoiSweepLine(points);
+            
+        }
+    }
+    
+    
+}    

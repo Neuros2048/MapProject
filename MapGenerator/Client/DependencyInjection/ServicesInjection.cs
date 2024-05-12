@@ -11,6 +11,7 @@ public static class ServicesInjection
         serviceCollection.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
         serviceCollection.AddScoped<ImageEditor>();
         serviceCollection.AddScoped<MapService>();
+        serviceCollection.AddScoped<PolygonMapService>();
         return serviceCollection;
     }
 }

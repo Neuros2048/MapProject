@@ -84,6 +84,15 @@
         await ctx.LineToAsync(x, y);
         await ctx.StrokeAsync();
     }
+    
+    public async Task Drawline(int x1, int y1,int x2,int y2)
+    {
+        await using var ctx = await _context.GetContext2DAsync();
+        await ctx.BeginPathAsync();
+        await ctx.MoveToAsync(x1, y1);
+        await ctx.LineToAsync(x2, y2);
+        await ctx.StrokeAsync();
+    }
 
     public  int GetWight()
     {
