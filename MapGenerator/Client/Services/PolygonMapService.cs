@@ -1,4 +1,5 @@
-﻿using Client.Logic;
+﻿using System.Runtime.InteropServices.ComTypes;
+using Client.Logic;
 
 namespace Client.Services;
 
@@ -24,7 +25,7 @@ public class PolygonMapService
     {
        public static double L = 0;
        public static double Lmin = 0;
-       public static double Lmax = 80;
+       public static double Lmax = 800;
        public Point P = p;
        public Point Left = left;
        public Point Right = right;
@@ -32,7 +33,7 @@ public class PolygonMapService
        public int IdLeft = idLeft;
        public int IdRight = idRight;
     }
-
+    private static readonly double TOLERANCE = 0.0000000001;
     private class ComparerPosition : IComparer<Position>
     {
        public int Compare(Position x, Position y)
@@ -41,19 +42,45 @@ public class PolygonMapService
           double b = Przeciecie(x.P, x.Right);
           double c = Przeciecie(y.Left, y.P);
           double d = Przeciecie(y.P, y.Right);
-          if ((a <= c && d <= b) || (c <= a && b <= d)) return 0;
-          if (a < c) return -1;
+          Console.WriteLine($"({x.P.X} {x.P.Y}) {x.Id} ({x.Left.X} {x.Left.Y}) {x.IdLeft} ({x.Right.X} {x.Right.Y}) {x.IdRight}");
+          Console.WriteLine($"({y.P.X} {y.P.Y}) {y.Id} ({y.Left.X} {y.Left.Y}) {y.IdLeft} ({y.Right.X} {y.Right.Y}) {y.IdRight} ");
+          Console.WriteLine($"prownanie {a} {b} {c} {d} dla l {Position.L}");
+
+          if ( (x.Id == x.IdRight && x.Id == x.IdLeft) || (y.Id == y.IdRight && y.Id == y.IdLeft))
+          {
+             if ((a <= c && d <= b) || (c <= a && b <= d)) return 0;
+          }
+          
+          /*if (x.Id == y.IdRight && x.Id ==  y.IdRight )
+          {
+             if (x.IdRight == y.Id) return -1;
+             return 1;
+         
+          }
+
+          if (y.Id == x.IdRight && y.Id ==  x.IdRight)
+          {
+             if (y.IdRight == x.Id) return 1;
+             return -1;
+          }*/
+          
+         
+         
+          if ((a+b)/2 < (c+d)/2) return -1;
           return 1;
 
        }
        
        private double Przeciecie( Point p1 , Point p2)
        {
+          
           if (p1.Y <= Position.Lmin) return Position.Lmin;
           if (p2.Y >= Position.Lmax) return Position.Lmax;
+          if (Math.Abs(p2.X - Position.L) < TOLERANCE) return p2.Y;
+          if (Math.Abs(p1.X - Position.L) < TOLERANCE) return p1.Y;
           double l = Position.L;
-          double a = p1.Y;
-          double b = p1.X;
+          double a = p2.Y;
+          double b = p2.X;
           double c = p1.Y;
           double d = p1.X;
           double u = 2 * (b - l);
@@ -64,7 +91,25 @@ public class PolygonMapService
           
        }
     }
-
+    private double Przeciecie( Point p1 , Point p2)
+    {
+          
+       if (p1.Y <= Position.Lmin) return Position.Lmin;
+       if (p2.Y >= Position.Lmax) return Position.Lmax;
+       if (Math.Abs(p2.X - Position.L) < TOLERANCE) return p2.Y;
+       if (Math.Abs(p1.X - Position.L) < TOLERANCE) return p1.Y;
+       double l = Position.L;
+       double a = p2.Y;
+       double b = p2.X;
+       double c = p1.Y;
+       double d = p1.X;
+       double u = 2 * (b - l);
+       double v = 2 * (d - l);
+       return -(Math.Sqrt(v * (Math.Pow(a, 2) * u - 2 * a * c * u + Math.Pow(b, 2) * (u - v) + Math.Pow(c, 2) * u) +
+                          Math.Pow(d, 2) * u * (v - u) + Math.Pow(l, 2) * Math.Pow((u - v), 2)) + a * v - c * u) /
+              (u - v);
+          
+    }
     public struct Point
     {
        public double X, Y;
@@ -113,13 +158,16 @@ public class PolygonMapService
     }
     private Circle FindCircleEnd(Point p1, Point p2, bool left)
     {
+       Console.WriteLine($"pun cri end  {p1.X} {p1.Y} and  {p2.X} {p2.Y}");
        double Ymax = 800;
        double ymin = 0;
+       double Xmax = Ymax;
        double x = (p1.X + p2.X) / 2;
-       double y = (p1.Y + p1.Y) / 2;
+       double y = (p1.Y + p2.Y) / 2;
        double vy = p2.X - p1.X;
        double vx = p2.Y - p1.Y;
        vx *= -1;
+       
        
        if (vx == 0)
        {
@@ -131,64 +179,86 @@ public class PolygonMapService
           return new Circle(new Point(x, Ymax), Ymax - y);
        }
 
-
-       if (left)
+       if (vy == 0)
        {
-          if (vy > 0)
+          if (left)
           {
-             vy *= -1;
-             vx *= -1;
-          }
-       }
-       else
-       {
-          if (vy < 0)
-          {
-             vy *= -1;
-             vx *= -1;
-          }
-       }
-
-       if (vx < 0)
-       {
-          double ileX = (0 - x) / vx;
-          double newY = y + vy * ileX;
-          if (newY < ymin || newY > Ymax)
-          {
-              if(vy < 0)
-              {
-                 double ileY = (0 - y) / vy;
-                 double newX = x + vx * ileY;
-                 var res = new Point(newX,Ymax );
-                 return new Circle(res, Distance(res, p1));
-              }
-              else
-              {
-                 double ileY = (Ymax - y) / vy;
-                 double newX = x + vx * ileY;
-                 var res = new Point(newX,Ymax );
-                 return new Circle(res, Distance(res, p1));
-              }
+             return new Circle(new Point(0, y), x);
           }
           else
           {
-             var res = new Point(0, newY);
-             return new Circle(res, Distance(p1 , res )  );
+             return new Circle(new Point(Xmax, y), Xmax - x);
           }
        }
-       else if(left)
+
+       if (vx > 0)
        {
-          double ileY = (0 - y) / vy;
-          double newX = x + vx * ileY;
-          var res = new Point(newX,Ymax );
-          return new Circle(res, Distance(res, p1));
+          vx *= -1;
+          vy *= -1;
+       }
+
+       Circle c1;
+       Circle c2;
+       double ileX = (0 - x) / vx;
+       double newY = y + vy * ileX;
+       if (newY < ymin || newY > Ymax)
+       {
+          if(vy < 0)
+          {
+             double ileY = (0 - y) / vy;
+             double newX = x + vx * ileY;
+             var res = new Point(newX,ymin );
+             c1 = new Circle(res, Distance(res, p1));
+          }
+          else
+          {
+             double ileY = (Ymax - y) / vy;
+             double newX = x + vx * ileY;
+             var res = new Point(newX,Ymax );
+             c1 = new Circle(res, Distance(res, p1));
+          }
        }
        else
        {
-          double ileY = (Ymax - y) / vy;
-          double newX = x + vx * ileY;
-          var res = new Point(newX,Ymax );
-          return new Circle(res, Distance(res, p1));
+          var res = new Point(0, newY);
+          c1 = new Circle(res, Distance(p1 , res )  );
+       }
+       vx *= -1;
+       vy *= -1;
+       
+       ileX = (Xmax - x) / vx;
+       newY = y + vy * ileX;
+       if (newY < ymin || newY > Ymax)
+       {
+          if(vy < 0)
+          {
+             double ileY = (0 - y) / vy;
+             double newX = x + vx * ileY;
+             var res = new Point(newX,ymin );
+             c2 = new Circle(res, Distance(res, p1));
+          }
+          else
+          {
+             double ileY = (Ymax - y) / vy;
+             double newX = x + vx * ileY;
+             var res = new Point(newX,Ymax );
+             c2 = new Circle(res, Distance(res, p1));
+          }
+       }
+       else
+       {
+          var res = new Point(Xmax, newY);
+          c2 = new Circle(res, Distance(p1 , res )  );
+       }
+       
+
+       if (left ^ (c1.p.Y < c2.p.Y) )
+       {
+          return c2;
+       }
+       else
+       {
+          return c1;
        }
        
     }
@@ -228,12 +298,15 @@ public class PolygonMapService
       double r = Math.Round(Math.Sqrt(sqr_of_r), 5);
       return new Circle( new Point(-g, -f),r);
    }
-    
-      
+
+   private void PrintPosition(Position p2)
+   {
+      Console.WriteLine($"({p2.P.X} {p2.P.Y}) {p2.Id} ({p2.Left.X} {p2.Left.Y}) {p2.IdLeft} ({p2.Right.X} {p2.Right.Y}) {p2.IdRight}");
+   }
    // Function to calculate the circumcenter of the triangle formed by three points
  
     private PriorityQueue<Zdarzenie,Point > points;
-
+      
     private class Zdarzenie
     {
        public int Id;
@@ -244,8 +317,9 @@ public class PolygonMapService
 
        public Zdarzenie(int id, Point p)
        {
-          this.Id = id;
-          this.P = p;
+          Id = id;
+          P = p;
+          Typ = true;
        }
        
        public Zdarzenie(int id, int idLeft, int idRight,Point p)
@@ -285,13 +359,34 @@ public class PolygonMapService
        public line? down;
     }
     double X0 = 0, X1 = 800, Y0 = 0, Y1 = 800;
-    
+
+    private void hahaha(BspTree<Position> tree)
+    {
+       Console.WriteLine("root");
+       var root = tree.GetRoot();
+       var croot = root.Next;
+     
+       PrintPosition(root.Data);
+          
+       double tc = Przeciecie(root.Data.Left, root.Data.P);
+       double td = Przeciecie(root.Data.P, root.Data.Right);
+       Console.WriteLine($"prownanie  {tc} {td} dla l {Position.L}");
+          
+       while (!croot.Equals(root))
+       {
+          PrintPosition(croot.Data);
+          tc = Przeciecie(croot.Data.Left, croot.Data.P); 
+          td = Przeciecie(croot.Data.P, croot.Data.Right);
+          Console.WriteLine($"prownanie  {tc} {td} dla l {Position.L}");
+          croot = croot.Next;
+             
+       }
+       Console.WriteLine("hah ended");
+    }
 
     public List<Center> Solve(List<Point> Spoints)
     {
        points = new PriorityQueue<Zdarzenie, Point>(new _comparerPoint());
-       Point ps1 = new Point(-800, -800);
-       Point ps2 = new Point(-800, 1600);
        List<Center> ans = new List<Center>();
        int j = 0;
        Spoints.ForEach( p => points.Enqueue(new Zdarzenie(j++,p),p));
@@ -300,61 +395,117 @@ public class PolygonMapService
        Zdarzenie cur = points.Dequeue();
        Position.L = cur.P.X;
        tree.Add(new Position(cur.P, cur.Id ,new Point(-1, -1), -1 ,new Point(-1, 801), -1 ));
-       
-      
+       Console.WriteLine( FindCircleEnd(new Point(469, 612), new Point(72 ,279), true).r);
+       Console.WriteLine( FindCircleEnd(new Point(469, 612), new Point(72 ,279), false).r);
+       Console.WriteLine( FindCircleEnd(new Point(72 ,279),new Point(469, 612),  true).r);
+       Console.WriteLine( FindCircleEnd(new Point(72 ,279),new Point(469, 612),  false).r);
+       Point priority;
        Console.WriteLine("dsadasda "+ call());
-       while (points.Count > 0)
+       while (points.TryDequeue(out cur, out priority))
        {
-          cur = points.Dequeue();
-          Position.L = cur.P.X;
+          //if(cur.P.X < Position.L) continue;
+          Position.L =  Math.Max(priority.X,Position.L );
+          Console.WriteLine($"{cur.Typ} {cur.P.X } {cur.P.Y} {cur.Id}" );
+          Console.WriteLine( $" root  {priority.X} {priority.Y}" );
+          hahaha(tree);
+         
           if (cur.Typ)
           {
-             var gdzie = tree.FindFirst(new Position(cur.P,cur.Id , new Point(cur.P.X -10,cur.P.Y-10) , -1, new Point(cur.P.X-10,cur.P.Y+10), -1));
+             Console.WriteLine($"a1");
+             var gdzie = tree.FindFirst(new Position(cur.P,cur.Id , new Point(cur.P.X -10,cur.P.Y) , cur.Id, new Point(cur.P.X-10,cur.P.Y), cur.Id));
+             Console.WriteLine($"id zanalezionego {gdzie.Data.Id}");
              tree.Remove(gdzie);
              Position p1 = new Position(cur.P, cur.Id, gdzie.Data.P, gdzie.Data.Id, gdzie.Data.P, gdzie.Data.Id);
              Position p2 = new Position(gdzie.Data.P, gdzie.Data.Id, gdzie.Data.Left, gdzie.Data.IdLeft, cur.P, cur.Id);
              Position p3 = new Position(gdzie.Data.P, gdzie.Data.Id,cur.P, cur.Id, gdzie.Data.Right, gdzie.Data.IdRight);
+             //Console.WriteLine($"({p2.P.X} {p2.P.Y}) {p2.Id} ({p2.Left.X} {p2.Left.Y}) {p2.IdLeft} ({p2.Right.X} {p2.Right.Y}) {p2.IdRight}");
+             //Console.WriteLine($"{p3.Id} {p3.IdLeft} {p3.IdRight}");
+             Console.WriteLine($"wpisywanie do drzewa");
+             if (tree.GetRoot() != null)
+             {
+                hahaha(tree);
+             }
+             
              tree.Add(p1);
+             hahaha(tree);
              tree.Add(p2);
+             hahaha(tree);
              tree.Add(p3);
+             hahaha(tree);
+             /*var tesr  = tree.GetRoot();
+             var ctests = tesr.Next;
+             Console.Write($"rooot - ");
+             PrintPosition(tesr.Data);
+             while (ctests != tesr)
+             {
+                PrintPosition(ctests.Data);
+                ctests = ctests.Next;
+             }
+             var compp = new ComparerPosition();
+             Console.WriteLine( compp.Compare(tesr.Data, tesr.Right.Data));
+             Console.WriteLine($"{tesr.Left == null}");
+             Console.WriteLine(tree.Exist(p2));*/
+             Console.WriteLine($"specjalne kułka wej");
              Circle r;
              Point rp;
-             if (p2.IdLeft != -1)
+             if (p2.IdLeft == -1)
              {
-                r = FindCircleEnd(p3.Right ,p3.P,true);
+                Console.WriteLine($"specjalne kułka");
+                r = FindCircleEnd(p2.Right ,p2.P,true);
+                rp = new Point(r.p.X + r.r, r.p.Y);
+                points.Enqueue(new Zdarzenie( p2.Id, p2.IdLeft,p2.IdRight , r.p ),rp);
+                Console.WriteLine($"puntk r {r.p.X} {r.p.Y}  r {rp.X}");
              }
              else
              {
+                Console.WriteLine($"normalne kułka");
                 r = FindCircle(p2);
+                if (r.p.X > p2.P.X)
+                {
+                   rp = new Point(r.p.X + r.r, r.p.Y);
+                   points.Enqueue(new Zdarzenie( p2.Id, p2.IdLeft,p2.IdRight , r.p ),rp);
+                   Console.WriteLine($"puntk r {r.p.X} {r.p.Y}  r {rp.X}");
+                }
                 
              }
-             r.p.X += r.r;
-             rp = new Point(r.p.X + r.r, r.p.Y);
-             points.Enqueue(new Zdarzenie( p2.Id, p2.IdLeft,p2.IdRight , r.p ),rp);
-             if (p3.IdRight != -1)
+             
+             
+             if (p3.IdRight == -1)
              {
+                Console.WriteLine($"specjalne kułka");
                 r = FindCircleEnd(p3.Left ,p3.P,false);
+                rp = new Point(r.p.X + r.r, r.p.Y);
+                points.Enqueue(new Zdarzenie( p3.Id, p3.IdLeft,p3.IdRight , r.p ),rp);
+                Console.WriteLine($"puntk r {r.p.X} {r.p.Y}  r {rp.X}");
              }
              else
              {
+                Console.WriteLine($"normalne");
                 r = FindCircle(p3);
+                if (r.p.X > p3.P.X)
+                {
+                   rp = new Point(r.p.X + r.r, r.p.Y);
+                   points.Enqueue(new Zdarzenie( p3.Id, p3.IdLeft,p3.IdRight , r.p ),rp);
+                }
              }
-             r.p.X += r.r;
-             rp = new Point(r.p.X + r.r, r.p.Y);
-             points.Enqueue(new Zdarzenie( p3.Id, p3.IdLeft,p3.IdRight , r.p ),rp);
+             
+            
              
           }
           else
           {
+             Console.WriteLine($"a2");
              Position szukane;
              if (cur.IdLeft != -1 && cur.IdRight!= -1)
              {
+                Console.WriteLine($"flsa srodek");
                 szukane = new Position(ans[cur.Id].P, cur.Id,ans[cur.IdLeft].P, cur.IdLeft ,ans[cur.IdRight].P, cur.IdRight );
                 if (tree.Exist(szukane))
                 {
                    ans[cur.Id].points.Add(cur.P);
                    ans[cur.IdLeft].points.Add(cur.P);
                    ans[cur.IdRight].points.Add(cur.P);
+                   Console.WriteLine($"dodana punkt punkt {cur.P.X} {cur.P.Y}");
                    var operatin = tree.Get(szukane);
                    tree.Remove(szukane);
                    operatin.Last.Data.Right = operatin.Next.Data.P;
@@ -363,59 +514,122 @@ public class PolygonMapService
                    operatin.Next.Data.IdLeft = operatin.Last.Data.Id ;
                    Circle c;
                    Point cp;
-                   if (operatin.Next.Data.P.X <  operatin.Next.Data.Left.X || operatin.Next.Data.P.X <  operatin.Next.Data.Right.X)
+                   if (operatin.Next.Data.IdRight != -1  )
                    {
-                      c = FindCircle(operatin.Next.Data);
-                      cp = new Point(c.p.X + c.r , c.p.Y);
-                      points.Enqueue(new Zdarzenie(operatin.Next.Data, c.p), cp);
-                     
+                      Console.WriteLine("hdasdasdasd1");
+                      if (operatin.Next.Data.P.X < operatin.Next.Data.Left.X ||
+                          operatin.Next.Data.P.X < operatin.Next.Data.Right.X)
+                      {
+                         c = FindCircle(operatin.Next.Data);
+                         cp = new Point(c.p.X + c.r*2, c.p.Y);
+                         points.Enqueue(new Zdarzenie(operatin.Next.Data, c.p), cp);
+
+                      }
                    }
-                   if(operatin.Last.Data.P.X <  operatin.Last.Data.Left.X || operatin.Last.Data.P.X <  operatin.Last.Data.Right.X)
+
+                   if (operatin.Last.Data.IdLeft != -1)
                    {
-                      c = FindCircle(operatin.Last.Data);
-                      cp = new Point(c.p.X + c.r , c.p.Y);
-                      points.Enqueue( new Zdarzenie(operatin.Last.Data ,c.p) ,  cp);
+                      Console.WriteLine("hdasdasdasd2");
+                      if (operatin.Last.Data.P.X < operatin.Last.Data.Left.X ||
+                          operatin.Last.Data.P.X < operatin.Last.Data.Right.X)
+                      {
+                         c = FindCircle(operatin.Last.Data);
+                         cp = new Point(c.p.X + c.r, c.p.Y);
+                         points.Enqueue(new Zdarzenie(operatin.Last.Data, c.p), cp);
+                      }
+                   }
+                   Console.WriteLine("hdasdasdasd");
+                   if (operatin.Next.Data.IdRight == -1 && operatin.Last.Data.IdLeft == -1)
+                   {
+                      Circle r;
+                      Point rp;
+
+                      if (operatin.Next.Data.IdRight == -1)
+                      {
+                         r = FindCircleEnd(operatin.Next.Data.P ,operatin.Last.Data.P,false);
+                         if (r.p.X <  Math.Max( operatin.Next.Data.P.X,operatin.Last.Data.P.X ) )  r = FindCircleEnd(operatin.Next.Data.P ,operatin.Last.Data.P,true);
+                         rp = new Point(r.p.X + r.r, r.p.Y);
+                         Console.WriteLine($" hejes {r.p.X} {r.p.Y}");
+                         points.Enqueue(new Zdarzenie( operatin.Next.Data.Id, operatin.Next.Data.IdLeft ,operatin.Next.Data.IdRight , r.p ),rp);
+                      }
+                      else
+                      {
+                         r = FindCircleEnd(operatin.Next.Data.P ,operatin.Last.Data.P,true);
+                         if (r.p.X < Math.Max( operatin.Next.Data.P.X,operatin.Last.Data.P.X ))  r = FindCircleEnd(operatin.Next.Data.P ,operatin.Last.Data.P,true);
+                         rp = new Point(r.p.X + r.r, r.p.Y);
+                         Console.WriteLine($" hejes {r.p.X} {r.p.Y}");
+                         points.Enqueue(new Zdarzenie( operatin.Last.Data.Id, operatin.Last.Data.IdLeft ,operatin.Last.Data.IdRight , r.p ),rp);
+                      }
+             
+                      
                    }
                 }
                 
              }else if (cur.IdRight == -1)
              {
+                Console.WriteLine($"false granica prawa");
                 szukane = new Position(ans[cur.Id].P, cur.Id,ans[cur.IdLeft].P, cur.IdLeft ,new Point(-1,801), -1);
+                Console.WriteLine($"szukamy   ({szukane.P.X} {szukane.P.Y}) {szukane.Id} ({szukane.Left.X} {szukane.Left.Y}) {szukane.IdLeft} ({szukane.Right.X} {szukane.Right.Y}) {szukane.IdRight}");
                 if (tree.Exist(szukane))
                 {
+                   Console.WriteLine($"false granica prawa robione");
                    var operatin = tree.Get(szukane);
+                   Console.WriteLine($"szukanie");
                    tree.Remove(szukane);
+                   Console.WriteLine($"usuniecie");
                    ans[cur.Id].points.Add(cur.P);
                    ans[cur.IdLeft].points.Add(cur.P);
+                   Console.WriteLine($"dodana punkt punkt {cur.P.X} {cur.P.Y}");
                    operatin.Last.Data.Right = operatin.Data.Right;
                    operatin.Last.Data.IdRight = operatin.Data.IdRight;
-                   if (operatin.Last.Data.Left.X > operatin.Last.Data.P.X)
+                   Console.WriteLine($"das  {operatin.Last.Data.Id}, {operatin.Last.Data.IdLeft}, {operatin.Last.Data.IdRight}");
+                   if (operatin.Last.Data.IdLeft != -1 )
                    {
-                      var r = FindCircleEnd( operatin.Last.Data.Left , operatin.Last.Data.P,false);
-                      r.p.X += r.r;
-                      var rp = new Point(r.p.X + r.r, r.p.Y);
-                      points.Enqueue(new Zdarzenie( operatin.Last.Data.Id, operatin.Last.Data.IdLeft,operatin.Last.Data.IdRight , r.p ),rp);
+                      Console.WriteLine("wedzo operacja dodanie koncaka prawda");
+                      Circle r;
+                      Point rp;
+                      r = FindCircleEnd(operatin.Last.Data.P, operatin.Last.Data.Left, false);
+                      if (r.p.X < Math.Max(operatin.Last.Data.P.X, operatin.Last.Data.Left.X))
+                         r = FindCircleEnd(operatin.Last.Data.P, operatin.Last.Data.Left, true);
+                      rp = new Point(r.p.X + r.r, r.p.Y);
+                      Console.WriteLine($" hejes {r.p.X} {r.p.Y}");
+                      points.Enqueue(
+                         new Zdarzenie(operatin.Last.Data.Id, operatin.Last.Data.IdLeft, operatin.Last.Data.IdRight,
+                            r.p), rp);
                    }
+
                 }
              }
              else
              {
+                Console.WriteLine($"false granica leva");
                 szukane = new Position(ans[cur.Id].P, cur.Id,new Point(-1,-1),-1 ,ans[cur.IdRight].P, cur.IdRight );
+                Console.WriteLine($"szukamy ({szukane.P.X} {szukane.P.Y}) {szukane.Id} ({szukane.Left.X} {szukane.Left.Y}) {szukane.IdLeft} ({szukane.Right.X} {szukane.Right.Y}) {szukane.IdRight}");
                 if (tree.Exist(szukane))
                 {
+                   Console.WriteLine($"false granica leva robione");
                    var operatin = tree.Get(szukane);
+                   Console.WriteLine($"szukanie");
                    tree.Remove(szukane);
+                   Console.WriteLine($"usuniete");
                    ans[cur.Id].points.Add(cur.P);
                    ans[cur.IdRight].points.Add(cur.P);
                    operatin.Next.Data.Left = operatin.Data.Left;
                    operatin.Next.Data.IdLeft = operatin.Data.IdLeft;
-                   if (operatin.Next.Data.Right .X > operatin.Next.Data.P.X)
+                   
+                   
+                   if (operatin.Next.Data.IdRight != -1)
                    {
-                      var r = FindCircleEnd( operatin.Next.Data.Right , operatin.Next.Data.P,true);
-                      r.p.X += r.r;
-                      var rp = new Point(r.p.X + r.r, r.p.Y);
-                      points.Enqueue(new Zdarzenie( operatin.Next.Data.Id, operatin.Next.Data.IdLeft,operatin.Next.Data.IdRight , r.p ),rp);
+                      Circle r;
+                      Point rp;
+                      r = FindCircleEnd(operatin.Next.Data.P ,operatin.Next.Data.Right,true);
+                      if (r.p.X < Math.Max( operatin.Next.Data.P.X,operatin.Next.Data.Right.X ))  r = FindCircleEnd(operatin.Next.Data.P ,operatin.Next.Data.Right,false);
+                      rp = new Point(r.p.X + r.r, r.p.Y);
+                      Console.WriteLine($" hejes {r.p.X} {r.p.Y}");
+                      points.Enqueue(new Zdarzenie( operatin.Next.Data.Id, operatin.Next.Data.IdLeft ,operatin.Next.Data.IdRight , r.p ),rp);
+                    
                    }
+                   
                 }
              }
           }
@@ -445,6 +659,47 @@ public class PolygonMapService
        return x;
     }
    /*
+    if (p2.IdLeft == -1)
+             {
+                r = FindCircleEnd(p2.Right ,p2.P,true);
+                rp = new Point(r.p.X + r.r, r.p.Y);
+                if(rp.X >= Math.Max(p2.Left.X, p2.P.X)) points.Enqueue(new Zdarzenie( p2.Id, p2.IdLeft,p2.IdRight , r.p ),rp);
+                
+                r = FindCircleEnd(p2.Right ,p2.P,false);
+                rp = new Point(r.p.X + r.r, r.p.Y);
+                if(rp.X >= Math.Max(p2.Left.X, p2.P.X)) points.Enqueue(new Zdarzenie( p2.Id, p2.IdLeft,p2.IdRight , r.p ),rp);
+             }
+             else
+             {
+                r = FindCircle(p2);
+                rp = new Point(r.p.X + r.r, r.p.Y);
+                points.Enqueue(new Zdarzenie( p2.Id, p2.IdLeft,p2.IdRight , r.p ),rp);
+                
+             }
+            
+             Console.WriteLine($"puntk r {r.p.X} {r.p.Y}");
+             
+             if (p3.IdRight == -1)
+             {
+                r = FindCircleEnd(p3.Left ,p3.P,false);
+                rp = new Point(r.p.X + r.r, r.p.Y);
+                if(rp.X >= Math.Max(p3.Left.X, p3.P.X)) points.Enqueue(new Zdarzenie( p3.Id, p3.IdLeft,p3.IdRight , r.p ),rp);
+                
+                r = FindCircleEnd(p3.Left ,p3.P,true);
+                rp = new Point(r.p.X + r.r, r.p.Y);
+                if(rp.X >= Math.Max(p3.Left.X, p3.P.X)) points.Enqueue(new Zdarzenie( p3.Id, p3.IdLeft,p3.IdRight , r.p ),rp);
+             }
+             else
+             {
+                r = FindCircle(p3);
+                rp = new Point(r.p.X + r.r, r.p.Y);
+                points.Enqueue(new Zdarzenie( p3.Id, p3.IdLeft,p3.IdRight , r.p ),rp);
+             }
+    
+    
+    
+    
+    
     var nowy = tree.Add(new Position(cur.P, cur.Id,cur.P, cur.Id,cur.P, cur.Id ));
              var cir = FindCircle(nowy.Last.Data.P, nowy.Data.P, nowy.Next.Data.P);
              cir.p.X += cir.r;

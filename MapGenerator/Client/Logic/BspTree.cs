@@ -124,12 +124,15 @@ public class BspTree<T>(IComparer<T> comparer)
     }
     private Vertex FindFirst(T data, Vertex w)
     {
-        if (comparer.Compare(data, w.Data) == 0)
+        Console.WriteLine($"find first ");
+        int compResult = comparer.Compare(data, w.Data);
+        if (compResult == 0)
         {
+            Console.WriteLine($"find first rowny");
             return w;
         }
-        
-        if (comparer.Compare(data, w.Data) > 0)
+        Console.WriteLine($"find first nie  rowny");
+        if (compResult > 0)
         {
             return FindFirst(data, w.Right!);
         }
@@ -196,6 +199,10 @@ public class BspTree<T>(IComparer<T> comparer)
                     Add(w, _root);
                 }
             }
+            else
+            {
+                _root = null;
+            }
             return;
         }
         Remove(data,_root);
@@ -209,6 +216,11 @@ public class BspTree<T>(IComparer<T> comparer)
     public bool Exist(T data)
     {
         return _root != null && Exist(data, _root);
+    }
+
+    public Vertex GetRoot()
+    {
+        return _root!;
     }
     
 }

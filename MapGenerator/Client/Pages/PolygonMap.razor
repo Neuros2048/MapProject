@@ -28,25 +28,44 @@
         int height = _canvasPolygon.GetHeight();
         Console.WriteLine("hej");
         await _canvasPolygon.DrawPoint(400,400);
-        int pn =10;
-        
-        List<PolygonMapService.Point> points = new List<PolygonMapService.Point>();
-        for (int i = 0; i < pn; i++)
+        int pn =3;
+
+        List<PolygonMapService.Point> points = new List<PolygonMapService.Point>(){
+            new PolygonMapService.Point(457, 131 ),
+            new PolygonMapService.Point(173 ,317),
+            new PolygonMapService.Point(260, 347)
+        };
+        /*for (int i = 0; i < pn; i++)
         {
             points.Add( new PolygonMapService.Point(rnd.Next(wight), rnd.Next(height)));
             //await _canvasPolygon.DrawPoint(rnd.Next(wight), rnd.Next(height));
+        }*/
+        // 243 793  163 397 360 740
+        foreach (var ps in points)
+        {
+            Console.WriteLine($"puntk {ps.X} {ps.Y}");
         }
         var res = Pms.Solve(points);
+        int j =0;
+        foreach (var pol in res)
+        {
+            await _canvasPolygon.ChangeColor(j++);
+            foreach (var p in pol.points)
+            {
+                await _canvasPolygon.Drawline((int)pol.P.X,(int) pol.P.Y, (int)p.X, (int)p.Y);
+            }
+            
+        }
         
 
-    /*
-        foreach (var r in res)
+/*
+    foreach (var r in res)
+    {
+        for (int i = 1; i < r.vertices.Count; i++)
         {
-            for (int i = 1; i < r.vertices.Count; i++)
-            {
-                Console.WriteLine(r.vertices[i].x );
-            }
-        }*/
+            Console.WriteLine(r.vertices[i].x );
+        }
+    }*/
        
         
         
