@@ -179,6 +179,9 @@ public class BspTree<T>(IComparer<T> comparer)
     {
         if (_root!.Data!.Equals(data))
         {
+            _root.Next.Last = _root.Last;
+            _root.Last.Next = _root.Next;
+            Console.WriteLine("huje");
             if (_root.Right != null)
             {
                 Vertex? w = _root.Right.Left;
@@ -203,6 +206,7 @@ public class BspTree<T>(IComparer<T> comparer)
             {
                 _root = null;
             }
+           
             return;
         }
         Remove(data,_root);

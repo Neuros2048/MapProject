@@ -29,18 +29,18 @@
         Console.WriteLine("hej");
         await _canvasPolygon.DrawPoint(400,400);
         int pn =3;
-
+        await _canvasPolygon.ClearMap();
         List<PolygonMapService.Point> points = new List<PolygonMapService.Point>(){
-            new PolygonMapService.Point(457, 131 ),
-            new PolygonMapService.Point(173 ,317),
-            new PolygonMapService.Point(260, 347)
+            new PolygonMapService.Point(13, 767 ),
+            new PolygonMapService.Point(151, 149),
+            new PolygonMapService.Point(130 ,346)
         };
         /*for (int i = 0; i < pn; i++)
         {
             points.Add( new PolygonMapService.Point(rnd.Next(wight), rnd.Next(height)));
             //await _canvasPolygon.DrawPoint(rnd.Next(wight), rnd.Next(height));
         }*/
-        // 243 793  163 397 360 740
+        // 
         foreach (var ps in points)
         {
             Console.WriteLine($"puntk {ps.X} {ps.Y}");

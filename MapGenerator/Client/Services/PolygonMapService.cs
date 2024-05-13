@@ -85,9 +85,9 @@ public class PolygonMapService
           double d = p1.X;
           double u = 2 * (b - l);
           double v = 2 * (d - l);
-          return -(Math.Sqrt(v * (Math.Pow(a, 2) * u - 2 * a * c * u + Math.Pow(b, 2) * (u - v) + Math.Pow(c, 2) * u) +
+          return  Math.Min( Math.Max(   -(Math.Sqrt(v * (Math.Pow(a, 2) * u - 2 * a * c * u + Math.Pow(b, 2) * (u - v) + Math.Pow(c, 2) * u) +
                                  Math.Pow(d, 2) * u * (v - u) + Math.Pow(l, 2) * Math.Pow((u - v), 2)) + a * v - c * u) /
-                     (u - v);
+                     (u - v) ,   Position.Lmin) , Position.Lmax);
           
        }
     }
@@ -405,7 +405,7 @@ public class PolygonMapService
        {
           //if(cur.P.X < Position.L) continue;
           Position.L =  Math.Max(priority.X,Position.L );
-          Console.WriteLine($"{cur.Typ} {cur.P.X } {cur.P.Y} {cur.Id}" );
+          Console.WriteLine($"{cur.Typ} {cur.P.X } {cur.P.Y} {cur.Id}  {cur.IdLeft } {cur.IdRight} " );
           Console.WriteLine( $" root  {priority.X} {priority.Y}" );
           hahaha(tree);
          
@@ -413,25 +413,58 @@ public class PolygonMapService
           {
              Console.WriteLine($"a1");
              var gdzie = tree.FindFirst(new Position(cur.P,cur.Id , new Point(cur.P.X -10,cur.P.Y) , cur.Id, new Point(cur.P.X-10,cur.P.Y), cur.Id));
-             Console.WriteLine($"id zanalezionego {gdzie.Data.Id}");
+             Console.WriteLine($"id zanalezionego {gdzie.Data.Id} ");
+             PrintPosition(gdzie.Data);
              tree.Remove(gdzie);
              Position p1 = new Position(cur.P, cur.Id, gdzie.Data.P, gdzie.Data.Id, gdzie.Data.P, gdzie.Data.Id);
              Position p2 = new Position(gdzie.Data.P, gdzie.Data.Id, gdzie.Data.Left, gdzie.Data.IdLeft, cur.P, cur.Id);
              Position p3 = new Position(gdzie.Data.P, gdzie.Data.Id,cur.P, cur.Id, gdzie.Data.Right, gdzie.Data.IdRight);
              //Console.WriteLine($"({p2.P.X} {p2.P.Y}) {p2.Id} ({p2.Left.X} {p2.Left.Y}) {p2.IdLeft} ({p2.Right.X} {p2.Right.Y}) {p2.IdRight}");
              //Console.WriteLine($"{p3.Id} {p3.IdLeft} {p3.IdRight}");
+             Circle r;
+             Point rp;
+
+             /*if (Distance(p3.Left, p3.P) > p3.P.X)
+             {
+                p1.Right = gdzie.Data.Right;
+                p1.IdRight = gdzie.Data.IdRight;
+                tree.Add(p1);
+                tree.Add(p2);
+           
+             }else if (Distance(p2.P, p2.Right) > p2.P.X)
+             {
+                p1.Left = gdzie.Data.Left;
+                p1.IdLeft = gdzie.Data.IdLeft;
+                tree.Add(p1);
+       
+                tree.Add(p3);
+             }
+             else
+             {
+                tree.Add(p1);
+                tree.Add(p2);
+                tree.Add(p3);
+             }*/
+
              Console.WriteLine($"wpisywanie do drzewa");
              if (tree.GetRoot() != null)
              {
                 hahaha(tree);
+                Console.WriteLine("usuniecie wypisanie");
              }
              
              tree.Add(p1);
              hahaha(tree);
+             
+             Console.WriteLine($" przeciecie {Przeciecie(p2.P, p2.Right)}");
              tree.Add(p2);
              hahaha(tree);
+             
+             
              tree.Add(p3);
              hahaha(tree);
+             
+             
              /*var tesr  = tree.GetRoot();
              var ctests = tesr.Next;
              Console.Write($"rooot - ");
@@ -446,8 +479,7 @@ public class PolygonMapService
              Console.WriteLine($"{tesr.Left == null}");
              Console.WriteLine(tree.Exist(p2));*/
              Console.WriteLine($"specjalne kułka wej");
-             Circle r;
-             Point rp;
+           
              if (p2.IdLeft == -1)
              {
                 Console.WriteLine($"specjalne kułka");
@@ -460,7 +492,7 @@ public class PolygonMapService
              {
                 Console.WriteLine($"normalne kułka");
                 r = FindCircle(p2);
-                if (r.p.X > p2.P.X)
+                if (r.p.X +r.r > Position.L&&r.p.Y < p2.P.Y )
                 {
                    rp = new Point(r.p.X + r.r, r.p.Y);
                    points.Enqueue(new Zdarzenie( p2.Id, p2.IdLeft,p2.IdRight , r.p ),rp);
@@ -482,7 +514,7 @@ public class PolygonMapService
              {
                 Console.WriteLine($"normalne");
                 r = FindCircle(p3);
-                if (r.p.X > p3.P.X)
+                if (r.p.X +r.r > Position.L && r.p.Y > p3.P.Y)
                 {
                    rp = new Point(r.p.X + r.r, r.p.Y);
                    points.Enqueue(new Zdarzenie( p3.Id, p3.IdLeft,p3.IdRight , r.p ),rp);
@@ -517,29 +549,32 @@ public class PolygonMapService
                    if (operatin.Next.Data.IdRight != -1  )
                    {
                       Console.WriteLine("hdasdasdasd1");
-                      if (operatin.Next.Data.P.X < operatin.Next.Data.Left.X ||
-                          operatin.Next.Data.P.X < operatin.Next.Data.Right.X)
+                      c = FindCircle(operatin.Next.Data);
+                      Console.WriteLine($"{c.p.X+c.r}  {Position.L}");
+                      if (c.p.X+c.r > Position.L)/*(operatin.Next.Data.P.X < operatin.Next.Data.Left.X ||
+                          operatin.Next.Data.P.X < operatin.Next.Data.Right.X)*/
                       {
-                         c = FindCircle(operatin.Next.Data);
-                         cp = new Point(c.p.X + c.r*2, c.p.Y);
+                         
+                         cp = new Point(c.p.X + c.r, c.p.Y);
                          points.Enqueue(new Zdarzenie(operatin.Next.Data, c.p), cp);
-
+                         Console.WriteLine($"dadanie kolo event {cp.X} {cp.Y} {c.p.X} {c.p.Y} {c.r}");
                       }
                    }
 
                    if (operatin.Last.Data.IdLeft != -1)
                    {
                       Console.WriteLine("hdasdasdasd2");
-                      if (operatin.Last.Data.P.X < operatin.Last.Data.Left.X ||
-                          operatin.Last.Data.P.X < operatin.Last.Data.Right.X)
+                      c = FindCircle(operatin.Last.Data);
+                      if (c.p.X+c.r > Position.L)/*(operatin.Last.Data.P.X < operatin.Last.Data.Left.X ||
+                          operatin.Last.Data.P.X < operatin.Last.Data.Right.X)*/
                       {
-                         c = FindCircle(operatin.Last.Data);
+                         
                          cp = new Point(c.p.X + c.r, c.p.Y);
                          points.Enqueue(new Zdarzenie(operatin.Last.Data, c.p), cp);
                       }
                    }
                    Console.WriteLine("hdasdasdasd");
-                   if (operatin.Next.Data.IdRight == -1 && operatin.Last.Data.IdLeft == -1)
+                   if (operatin.Next.Data.IdRight == -1 || operatin.Last.Data.IdLeft == -1)
                    {
                       Circle r;
                       Point rp;
@@ -555,7 +590,7 @@ public class PolygonMapService
                       else
                       {
                          r = FindCircleEnd(operatin.Next.Data.P ,operatin.Last.Data.P,true);
-                         if (r.p.X < Math.Max( operatin.Next.Data.P.X,operatin.Last.Data.P.X ))  r = FindCircleEnd(operatin.Next.Data.P ,operatin.Last.Data.P,true);
+                         if (r.p.X < Math.Max( operatin.Next.Data.P.X,operatin.Last.Data.P.X ))  r = FindCircleEnd(operatin.Next.Data.P ,operatin.Last.Data.P,false);
                          rp = new Point(r.p.X + r.r, r.p.Y);
                          Console.WriteLine($" hejes {r.p.X} {r.p.Y}");
                          points.Enqueue(new Zdarzenie( operatin.Last.Data.Id, operatin.Last.Data.IdLeft ,operatin.Last.Data.IdRight , r.p ),rp);
