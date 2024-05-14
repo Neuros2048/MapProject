@@ -123,7 +123,20 @@ public class PolygonMapService
           this.X = 0;
           this.Y = 0;
        }
-        
+       public static Point operator +(Point a, Point b)
+          => new Point(a.X+ b.X , a.Y + b.Y);
+
+       public static Point operator -(Point a, Point b)
+          => new Point(a.X- b.X , a.Y - b.Y);
+
+       public static Point operator *(Point a, double b)
+          => new Point(a.X* b , a.Y * b);
+       public Point rot() {
+          return new Point(-Y,X);
+       }
+       public double len() {
+          return Double.Hypot(X,Y);
+       }
     }
     public struct Circle
     {
@@ -142,12 +155,16 @@ public class PolygonMapService
        public Point P;
        public PointShape Right;
        public PointShape Left;
+       public int id;
+       public int id2;
 
-       public PointShape(Point p)
+       public PointShape(Point p,int id,int id2)
        {
           P = p;
           Right = this;
           Left = this;
+          this.id = id;
+          this.id2 = id2;
        }
     }
 
@@ -341,16 +358,45 @@ public class PolygonMapService
     public class Center
     {
        public Point P;
-       public List<Point> points;
-       public PointShape? Left;
-       public PointShape? Right;
+      
+       public PointShape? Left = null;
+       public PointShape? Right = null;
        public bool started = false;
        public Center(Point p)
        {
           P = p;
-          points = new List<Point>();
        }
-       
+
+       public void Add(Point p,int i,int j)
+       {
+          if (Left == null)
+          {
+             Left = new PointShape(p, i,j);
+             Right = Left;
+             return;
+          }
+          PointShape a = new PointShape(p, i,j);
+          if (Left.id == i || Left.id2 == i || Left.id == j || Left.id2 == j )
+          {
+             a.Right = Left;
+             a.Left = Left.Left;
+             a.Left.Right = a;
+             Left.Left = a;
+             Left = a;
+          }
+          else
+          {
+             a.Left = Right;
+             a.Right = Right.Right;
+             a.Right.Left = a;
+             Right.Right = a;
+             Right = a;
+          }
+          
+          
+       }
+
+
     }
     private class line
     {
@@ -360,6 +406,10 @@ public class PolygonMapService
     }
     double X0 = 0, X1 = 800, Y0 = 0, Y1 = 800;
 
+    private struct luk
+    {
+       
+    }
     private void hahaha(BspTree<Position> tree)
     {
        Console.WriteLine("root");
@@ -385,13 +435,13 @@ public class PolygonMapService
     }
 
     public List<Center> Solve(List<Point> Spoints)
-    {
+    {/*
        points = new PriorityQueue<Zdarzenie, Point>(new _comparerPoint());
        List<Center> ans = new List<Center>();
        int j = 0;
        Spoints.ForEach( p => points.Enqueue(new Zdarzenie(j++,p),p));
        Spoints.ForEach(p => ans.Add(new Center(p)));
-       BspTree<Position> tree = new BspTree<Position>(new ComparerPosition());
+       BspTree<Position> tree = new BspTree<Position>(new ComparerPosition() );
        Zdarzenie cur = points.Dequeue();
        Position.L = cur.P.X;
        tree.Add(new Position(cur.P, cur.Id ,new Point(-1, -1), -1 ,new Point(-1, 801), -1 ));
@@ -444,7 +494,7 @@ public class PolygonMapService
                 tree.Add(p1);
                 tree.Add(p2);
                 tree.Add(p3);
-             }*/
+             }#1#
 
              Console.WriteLine($"wpisywanie do drzewa");
              if (tree.GetRoot() != null)
@@ -477,7 +527,7 @@ public class PolygonMapService
              var compp = new ComparerPosition();
              Console.WriteLine( compp.Compare(tesr.Data, tesr.Right.Data));
              Console.WriteLine($"{tesr.Left == null}");
-             Console.WriteLine(tree.Exist(p2));*/
+             Console.WriteLine(tree.Exist(p2));#1#
              Console.WriteLine($"specjalne kułka wej");
            
              if (p2.IdLeft == -1)
@@ -552,7 +602,7 @@ public class PolygonMapService
                       c = FindCircle(operatin.Next.Data);
                       Console.WriteLine($"{c.p.X+c.r}  {Position.L}");
                       if (c.p.X+c.r > Position.L)/*(operatin.Next.Data.P.X < operatin.Next.Data.Left.X ||
-                          operatin.Next.Data.P.X < operatin.Next.Data.Right.X)*/
+                          operatin.Next.Data.P.X < operatin.Next.Data.Right.X)#1#
                       {
                          
                          cp = new Point(c.p.X + c.r, c.p.Y);
@@ -566,7 +616,7 @@ public class PolygonMapService
                       Console.WriteLine("hdasdasdasd2");
                       c = FindCircle(operatin.Last.Data);
                       if (c.p.X+c.r > Position.L)/*(operatin.Last.Data.P.X < operatin.Last.Data.Left.X ||
-                          operatin.Last.Data.P.X < operatin.Last.Data.Right.X)*/
+                          operatin.Last.Data.P.X < operatin.Last.Data.Right.X)#1#
                       {
                          
                          cp = new Point(c.p.X + c.r, c.p.Y);
@@ -673,7 +723,8 @@ public class PolygonMapService
       
        
        Console.WriteLine("hej endents");
-       return ans;
+       return ans;*/
+       return new List<Center>();
     }
     private double call()
     {
@@ -693,377 +744,259 @@ public class PolygonMapService
 
        return x;
     }
-   /*
-    if (p2.IdLeft == -1)
-             {
-                r = FindCircleEnd(p2.Right ,p2.P,true);
-                rp = new Point(r.p.X + r.r, r.p.Y);
-                if(rp.X >= Math.Max(p2.Left.X, p2.P.X)) points.Enqueue(new Zdarzenie( p2.Id, p2.IdLeft,p2.IdRight , r.p ),rp);
-                
-                r = FindCircleEnd(p2.Right ,p2.P,false);
-                rp = new Point(r.p.X + r.r, r.p.Y);
-                if(rp.X >= Math.Max(p2.Left.X, p2.P.X)) points.Enqueue(new Zdarzenie( p2.Id, p2.IdLeft,p2.IdRight , r.p ),rp);
-             }
-             else
-             {
-                r = FindCircle(p2);
-                rp = new Point(r.p.X + r.r, r.p.Y);
-                points.Enqueue(new Zdarzenie( p2.Id, p2.IdLeft,p2.IdRight , r.p ),rp);
-                
-             }
-            
-             Console.WriteLine($"puntk r {r.p.X} {r.p.Y}");
-             
-             if (p3.IdRight == -1)
-             {
-                r = FindCircleEnd(p3.Left ,p3.P,false);
-                rp = new Point(r.p.X + r.r, r.p.Y);
-                if(rp.X >= Math.Max(p3.Left.X, p3.P.X)) points.Enqueue(new Zdarzenie( p3.Id, p3.IdLeft,p3.IdRight , r.p ),rp);
-                
-                r = FindCircleEnd(p3.Left ,p3.P,true);
-                rp = new Point(r.p.X + r.r, r.p.Y);
-                if(rp.X >= Math.Max(p3.Left.X, p3.P.X)) points.Enqueue(new Zdarzenie( p3.Id, p3.IdLeft,p3.IdRight , r.p ),rp);
-             }
-             else
-             {
-                r = FindCircle(p3);
-                rp = new Point(r.p.X + r.r, r.p.Y);
-                points.Enqueue(new Zdarzenie( p3.Id, p3.IdLeft,p3.IdRight , r.p ),rp);
-             }
+   
     
     
     
-    
-    
-    var nowy = tree.Add(new Position(cur.P, cur.Id,cur.P, cur.Id,cur.P, cur.Id ));
-             var cir = FindCircle(nowy.Last.Data.P, nowy.Data.P, nowy.Next.Data.P);
-             cir.p.X += cir.r;
-             Point cir_p = new Point(cir.p.X + cir.r, cir.p.Y);
-             points.Enqueue(new Zdarzenie(nowy.Last.Data.Id,nowy.Data.Id,nowy.Next.Data.Id,cir.p),cir_p );
-             if (nowy.Next.Data.Id != -1)
-             {
-                cir = FindCircle(nowy.Data.P, nowy.Next.Data.P, nowy.Next.Next.Data.P);
-                cir_p = new Point(cir.p.X + cir.r, cir.p.Y);
-                points.Enqueue(new Zdarzenie(nowy.Last.Data.Id,nowy.Data.Id,nowy.Next.Data.Id,cir.p),cir_p );
-             }
-             if (nowy.Last.Data.Id != -1)
-             {
-                cir = FindCircle(nowy.Last.Last.Data.P, nowy.Last.Data.P, nowy.Data.P);
-                cir_p = new Point(cir.p.X + cir.r, cir.p.Y);
-                points.Enqueue(new Zdarzenie(nowy.Last.Data.Id,nowy.Data.Id,nowy.Next.Data.Id,cir.p),cir_p );
-             }
-             
-             
-             
-    private class _comparerEvents : IComparer<eventt>
+    private const double EPS = 1e-12, INF = 1e100;
+
+    private double cross(Point a, Point b)
     {
-       public int Compare(eventt? x, eventt? y)
+       return a.X * b.Y - a.Y * b.X;
+    }
+    private bool collinear(Point a, Point b) {
+       return Math.Abs(cross(a,b) ) < EPS;
+    }
+    
+
+    // dot and cross products
+    double dot(Point a ,Point b)  {
+       return a.X * b.X + a.Y * b.Y;
+    }
+    private Point lineline(Point a, Point b, Point c, Point d) {
+       return a + (b - a) * (   cross(c - a,d - c) / cross(b - a,d - c));
+    }
+    
+    
+    Point circumcenter(Point a, Point b, Point c) {
+       b = (a + b) * 0.5;
+       c = (a + c) * 0.5;
+       return lineline(b, b + (b - a).rot(), c, c + (c - a).rot());
+    }
+    
+    struct arc
+    {
+       public static double sweepline;
+       public Point p, q;
+       public int id = 0, i;
+
+       public arc(Point p, Point q, int i)
+       {
+          this.q = q;
+          this.p = p;
+          this.i = i;
+       }
+
+       // get y coordinate of intersection with following arc.
+       // don't question my magic formulas
+       
+       public double gety(double x) {
+          if(q.Y == INF) return INF;
+          x += EPS;
+          Point med = (p + q) * 0.5;
+          Point dir = (p - med).rot();
+          double D = (x - p.X) * (x - q.X);
+      
+          return med.Y + ((med.X - x) * dir.X + Math.Sqrt(D) * dir.len()) / dir.Y;
+       }
+       public static bool operator <(arc lhs, arc rhs)
+       {
+          return lhs.gety(arc.sweepline) < rhs.gety(arc.sweepline); 
+          
+       }
+
+       public static bool operator >(arc lhs, arc rhs)
+       {
+          return lhs.gety(arc.sweepline) > rhs.gety(arc.sweepline); 
+       }
+       public static bool operator <(arc lhs, double rhs)
+       {
+          return lhs.gety(arc.sweepline) < rhs; 
+          
+       }
+
+       public static bool operator >(arc lhs, double rhs)
+       {
+          return lhs.gety(arc.sweepline) > rhs; 
+       }
+
+       private sealed class ArcRelationalComparer : IComparer<arc>
+       {
+          public int Compare(arc x, arc y)
+          {
+             if (x < y) return -1;
+             if (x > y) return 1;
+             return 0;
+          }
+       }
+      private sealed class Comparer : ICompareDouble<arc>
+      {
+         public int Compare(arc w, double x)
+         {
+            if (w < x) return -1;
+            if (w > x) return 1;
+            return 0;
+         }
+
+         public int Compare(double x, arc w)
+         {
+            if (w > x) return -1;
+            if (w < x) return 1;
+            return 0;
+         }
+      }
+
+      public static ICompareDouble<arc> CompareDouble { get; } = new Comparer();
+      public static IComparer<arc> ArcComparer { get; } = new ArcRelationalComparer();
+
+     
+    };
+      
+    struct Zdara {
+       public double x;
+       public int id; 
+       public BspTree<arc>.Vertex it;
+       public Point point;
+
+       public Zdara(double x, int id, BspTree<arc>.Vertex it, Point point)
+       {
+          this.x = x;
+          this.id = id;
+          this.it = it;
+          this.point = point;
+       }
+       
+    };
+    private class _comparerZdara : IComparer<Zdara>
+    {
+       public int Compare(Zdara x, Zdara y)
        {
           return x.x.CompareTo(y.x);
        }
     }
-    
-    public int Solve(List<Point> Spoints)
-{
-
    
-class eventt {
+   
+    BspTree<arc> beach; // self explanatory
+    private Point[] v;
+    private PriorityQueue<Zdara, double> pr;
+    // priority queue of point and vertex events
+    
+    //vector<pii> edges; // delaunay edges
+    List<bool> valid; // valid[-id] == true if the vertex event with corresponding id is valid
+    int n, ti; // number of points, next available vertex ID
+    
+    // update the remove event for the arc at position it
+    void upd(BspTree<arc>.Vertex it) {
+        if(it.Data.i == -1) return; // doesn't correspond to a real point
+        valid[-it.Data.id] = false; // mark existing remove event as invalid
+        var a = it.Last;
+        if(collinear(it.Data.q - it.Data.p, a.Data.p - it.Data.p)) return; // doesn't generate a vertex event
+        it.Data.id = --ti; // new vertex event ID
+        valid.Add(true); // label this ID true
+        Point c = circumcenter(it.Data.p, it.Data.q, a.Data.p);
+        double x = c.X + (c - it.Data.p).len();
+   
+        // event is generated at time x.
+        // make sure it passes the sweep-line, and that the arc truly shrinks to 0
+        if(x > arc.sweepline - EPS && a.Data.gety(x) + EPS > it.Data.gety(x) && a.Data.gety(x) > -1e8 ) {
 
-       public double x;
-       public Point p;
-       public arc a;
-       public bool valid;
+            pr.Enqueue(new Zdara(x, it.Data.id, it,c),x);
+        }
+        
+    }
+    // add Delaunay edge
+    void add_edge(int i, int j) {
+        if(i == -1 || j == -1) return;
+        //edges.push_back({v[i].second, v[j].second});
+    }
+    // handle a point event
+    void add(int i) {
+        Point p = v[i];
+        // find arc to split
 
-       public eventt(double x, Point p, arc a)
-       {
-          this.x = x;
-          this.p = p;
-          this.a = a;
-          valid = true;
-       }
-       
-    };
-       private arc? root = null;
-        private PriorityQueue<eventt,eventt > events;
-    private static List<seg> output;
-    class seg {
-       public Point start, end;
-       public bool done;
-
-       public seg(Point p)
-       {
-          start = p;
-          end.X = 0;
-          end.Y = 0;
-          done = false;
-          output.Add(this);
-       }
-       // Set the end point and mark as "done."
-       public void finish(Point p) { if (done) return; end = p; done = true; }
-    };
-    class arc {
-         public Point p;
-         public arc? prev;
-         public arc? next;
-         public eventt? e = null;
-         public seg? s0 = null, s1=null;
-
-         public arc(Point p, arc a = null, arc b = null)
-         {
-            this.p = p;
-            this.prev = a;
-            this.next = b;
-         }
+        var c = beach.LowerBound(p.Y);
+        
+        // insert new arcs. passing the following iterator gives a slight speed-up
+        var b = beach.Add(new arc(p, c.Data.p, i));
+        var a = beach.Add(new arc(c.Data.p, p, c.Data.i) ) ;
+ 
+        upd(a); upd(b); upd(c);
+    }
+    // handle a vertex event
+    void remove(BspTree<arc>.Vertex it) {
+        var a = it.Last;
+        var b = it.Next;
       
-   };
+        beach.Remove(it);
 
-   Console.WriteLine("uruchomione");
-   Point p;
-   output = new List<seg>();
-   points = new PriorityQueue<Point, Point>(new _comparerPoint());
-   events = new PriorityQueue<eventt, eventt>(new _comparerEvents());
-   Spoints.ForEach( p => points.Enqueue(p,p));
+        a.Data.q = b.Data.p;
+        
+        add_edge(a.Data.i, b.Data.i );
+        upd(a); upd(b);
+    }
+    // X is a value exceeding all coordinates
    
-   
-   double dx = (X1-X0+1)/5.0, dy = (Y1-Y0+1)/5.0;
-   X0 -= dx;  X1 += dx;  Y0 -= dy;  Y1 += dy;
-
-   // Process the queues; select the top element with smaller x coordinate.
-   while (points.Count > 0)
+   public List<Center>  Solve2(List<Point> lp)
    {
-      if (events.Count > 0 && events.Peek().x <= points.Peek().x)
-         process_event();
-      else
-         process_point();
-   }
+      double X = 3e10;
 
-   // After all points are processed, do the remaining circle events.
-   while (events.Count > 0)
-      process_event();
+      lp.Sort(new _comparerPoint()) ;
 
-   finish_edges(); // Clean up dangling edges.
-   print_output();
-   return 1;
-}
+      n = lp.Count;
+      v  = new Point[n];
+      List<Center> ans = new List<Center>();
+      beach = new BspTree<arc>(arc.ArcComparer,arc.CompareDouble);
+      lp.ForEach(p=> ans.Add(new Center(p)));
 
-void process_point()
-{
-   // Get the next point from the queue.
-   Point p = points.Dequeue();
+      beach.Add( new arc(new Point (-X, -X), new Point(-X, X), -1));
+      //beach.Add(new arc(new Point(-X, X), new Point(INF, INF), -1));
 
-   // Add a new arc to the parabolic front.
-   front_insert(p);
-}
+      // create all point events
+      Point nic = new Point();
+      pr = new PriorityQueue<Zdara, double>();
+      int i = 0;
+      lp.ForEach(p=> v[i++] = p);
+      i = 0;
+      lp.ForEach(p => pr.Enqueue( new Zdara(p.X,i++,beach.GetEnd(),nic ), p.X));
+      
+      ti = 0;
+      valid = new List<bool>()
+      {
+        false
+      };
+      Zdara e;
 
-void process_event()
-{
-   // Get the next event from the queue.
-   eventt e = events.Dequeue();
-   
-
-   if (e.valid) {
-      // Start a new edge.
-      seg s = new seg(e.p);
-
-      // Remove the associated arc from the front.
-      arc a = e.a;
-      if (a.prev != null) {
-         a.prev.next = a.next;
-         a.prev.s1 = s;
-      }
-      if (a.next != null) {
-         a.next.prev = a.prev;
-         a.next.s0 = s;
-      }
-
-      // Finish the edges before and after a.
-      if (a.s0!= null) a.s0.finish(e.p);
-      if (a.s1 != null) a.s1.finish(e.p);
-
-      // Recheck circle events on either side of p:
-      if (a.prev!=null) check_circle_event(a.prev, e.x);
-      if (a.next!=null) check_circle_event(a.next, e.x);
-   }
-   
-}
-
-void front_insert(Point p)
-{
-   if (root == null) {
-      root = new arc(p);
-      return;
-   }
-
-   // Find the current arc(s) at height p.y (if there are any).
-   arc i;
-   for (i = root; i!=null; i = i.next) {
-      Point z , zz;
-      z = new Point();
-      zz = new Point();
-      if (intersect(p,i,z)) {
-         // New parabola intersects arc i.  If necessary, duplicate i.
-         if (i.next!=null && !intersect(p,i.next, zz)) {
-            i.next.prev = new arc(i.p,i,i.next);
-            i.next = i.next.prev;
+      while(pr.Count > 0 ) {
+        
+         e =pr.Dequeue();
+         arc.sweepline = e.x;
+         
+      
+         if(e.id >= 0) {
+           
+             add(e.id);
+         }else if(valid[-e.id])
+         {
+           
+          Console.WriteLine("hescie");
+            //ans[ e.it.Last.Data.i].points.Add(e.point);
+            //ans[ e.it.Data.i].points.Add(e.point);
+            //ans[ e.it.Next.Data.i].points.Add(e.point);
+            if (e.it.Last.Data.i > -1 && e.it.Next.Data.i > -1 && e.it.Data.i > -1)
+            {
+               ans[ e.it.Last.Data.i].Add(e.point,e.it.Data.i , e.it.Next.Data.i); 
+               ans[ e.it.Data.i].Add(e.point,e.it.Last.Data.i,e.it.Next.Data.i);
+               ans[e.it.Next.Data.i].Add(e.point,e.it.Data.i,e.it.Last.Data.i);
+            }
+            //Console.WriteLine($"{e.it.Last.Data.i} ,{e.it.Data.i} ,{e.it.Next.Data.i} ");
+            //Console.WriteLine("to ok ?");
+            remove(e.it);
+            
          }
-         else i.next = new arc(i.p,i);
-         i.next.s1 = i.s1;
-
-         // Add p between i and i.next.
-         i.next.prev = new arc(p,i,i.next);
-         i.next = i.next.prev;
-
-         i = i.next; // Now i points to the new arc.
-
-         // Add new half-edges connected to i's endpoints.
-         i.prev.s1 = i.s0 = new seg(z);
-         i.next.s0 = i.s1 = new seg(z);
-
-         // Check for new circle events around the new arc:
-         check_circle_event(i, p.x);
-         check_circle_event(i.prev, p.x);
-         check_circle_event(i.next, p.x);
-
-         return;
       }
-   }
-
-   // Special case: If p never intersects an arc, append it to the list.
-   for (i = root; i.next!=null; i=i.next) ; // Find the last node.
-
-   i.next = new arc(p,i);
-   // Insert segment between p and i
-   Point start = new Point();
-   start.x = X0;
-   start.y = (i.next.p.y + i.p.y) / 2;
-   i.s1 = i.next.s0 = new seg(start);
-}
-
-// Look for a new circle event for arc i.
-void check_circle_event(arc i, double x0)
-{
-   // Invalidate any old event.
-   
-   if (i.e!=null && i.e.x != x0)
-      i.e.valid = false;
-   i.e = null;
-
-   if (i.prev==null || i.next == null)
-      return;
-
-   double x = 0;
-   Point o = new Point();
-
-   if (circle(i.prev.p, i.p, i.next.p,ref x,o) && x > x0) {
-      // Create new event.
-      i.e = new eventt(x, o, i);
-      events.Enqueue(i.e,i.e);
-   }
-}
-
-// Find the rightmost point on the circle through a,b,c.
-bool circle(Point a, Point b, Point c, ref double  x, Point o)
-{
-   // Check that bc is a "right turn" from ab.
-   if ((b.x-a.x)*(c.y-a.y) - (c.x-a.x)*(b.y-a.y) > 0)
-      return false;
-
-   // Algorithm from O'Rourke 2ed p. 189.
-   double A = b.x - a.x,  B = b.y - a.y,
-          C = c.x - a.x,  D = c.y - a.y,
-          E = A*(a.x+b.x) + B*(a.y+b.y),
-          F = C*(a.x+c.x) + D*(a.y+c.y),
-          G = 2*(A*(c.y-b.y) - B*(c.x-b.x));
-
-   if (G == 0) return false;  // Points are co-linear.
-
-   // Point o is the center of the circle.
-   o.x = (D*E-B*F)/G;
-   o.y = (A*F-C*E)/G;
-
-   // o.x plus radius equals max x coordinate.
-   x = o.x +   Math.Sqrt(  Math.Pow(a.x - o.x, 2) + Math.Pow(a.y - o.y, 2) );
-   return true;
-}
-
-// Will a new parabola at point p intersect with arc i?
-bool intersect(Point p, arc i, Point res)
-{
-   if (i.p.x == p.x) return false;
-
-   double a =0 ,b = 0 ;
-   if (i.prev!=null) // Get the intersection of i.prev, i.
-      a = intersection(i.prev.p, i.p, p.x).y;
-   if (i.next !=null) // Get the intersection of i.next, i.
-      b = intersection(i.p, i.next.p, p.x).y;
-
-   if ((i.prev==null || a <= p.y) && (i.next == null || p.y <= b)) {
-      res.y = p.y;
-
-      // Plug it back into the parabola equation.
-      res.x = (i.p.x*i.p.x + (i.p.y-res.y)*(i.p.y-res.y) - p.x*p.x)
-                / (2*i.p.x - 2*p.x);
-
-      return true;
-   }
-   return false;
-}
-
-// Where do two parabolas intersect?
-Point intersection(Point p0, Point p1, double l)
-{
-   Point res = new Point(), p = p0;
-
-   if (p0.x == p1.x)
-      res.y = (p0.y + p1.y) / 2;
-   else if (p1.x == l)
-      res.y = p1.y;
-   else if (p0.x == l) {
-      res.y = p0.y;
-      p = p1;
-   } else {
-      // Use the quadratic formula.
-      double z0 = 2*(p0.x - l);
-      double z1 = 2*(p1.x - l);
-
-      double a = 1/z0 - 1/z1;
-      double b = -2*(p0.y/z0 - p1.y/z1);
-      double c = (p0.y*p0.y + p0.x*p0.x - l*l)/z0
-               - (p1.y*p1.y + p1.x*p1.x - l*l)/z1;
-
-      res.y = ( -b - Math.Sqrt(b*b - 4*a*c) ) / (2*a);
-   }
-   // Plug back into one of the parabola equations.
-   res.x = (p.x*p.x + (p.y-res.y)*(p.y-res.y) - l*l)/(2*p.x-2*l);
-   return res;
-}
-
-void finish_edges()
-{
-   // Advance the sweep line so no parabolas can cross the bounding box.
-   double l = X1 + (X1-X0) + (Y1-Y0);
-
-   // Extend each remaining segment to the new parabola intersections.
-   for (arc i = root; i.next!=null; i = i.next)
-      if (i.s1!=null)
-         i.s1.finish(intersection(i.p, i.next.p, l*2));
-}
-
-
-void print_output()
-{
-   // Bounding box coordinates.
-
-
-   // Each output segment in four-column format.
-   
-   for (int i = 0 ; i < output.Count; i++) {
-      Point p0 = output[i].start;
-      Point p1 = output[i].end;
-      Console.WriteLine(p0.x + " " + p0.y +" " +p1.x + " " + p1.y);
-   }
-}*/
-
-   
+      Console.WriteLine("koniecasd");
+      return ans;
+      }
     
+
 }

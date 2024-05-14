@@ -1,6 +1,11 @@
 ﻿namespace Client.Logic;
 
-public class BspTree<T>(IComparer<T> comparer)
+public interface ICompareDouble<in T>
+{
+    public int Compare(T w, double x);
+    public int Compare( double x,T w);
+}
+public class BspTree<T>(IComparer<T?> comparer,ICompareDouble<T?> compareDouble)
 {
     private Vertex? _root ;
     public class Vertex
@@ -9,19 +14,27 @@ public class BspTree<T>(IComparer<T> comparer)
         public Vertex? Right ;
         public Vertex Next;
         public Vertex Last;
-        public T Data;
+        public Vertex? Parent;
+        public T? Data;
 
-        public Vertex(T data)
+        public Vertex(T? data)
         {
             Data = data;
             Next = this;
             Last = this;
         }
+        public Vertex()
+        {
+            Next = this;
+            Last = this;
+        }
     }
 
-    private Vertex Add(T data, Vertex? w)
+    private readonly Vertex _end = new Vertex();
+    
+    private Vertex Add(T? data, Vertex? w)
     {
-        if (comparer.Compare(data, w!.Data)>=0)
+        if (comparer.Compare(data, w!.Data)>0)
         {
             if (w.Right == null)
             {
@@ -32,6 +45,7 @@ public class BspTree<T>(IComparer<T> comparer)
                 };
                 w.Next.Last = w.Right;
                 w.Next = w.Right;
+                w.Right.Parent = w;
                 return w.Right;
             }
             else
@@ -50,6 +64,7 @@ public class BspTree<T>(IComparer<T> comparer)
                 };
                 w.Last.Next = w.Left;
                 w.Last = w.Left;
+                w.Left.Parent = w;
                 return w.Left;
             }
             else
@@ -60,11 +75,12 @@ public class BspTree<T>(IComparer<T> comparer)
     }
     private void Add(Vertex x, Vertex w)
     {
-        if (comparer.Compare(x.Data, w.Data)>=0)
+        if (comparer.Compare(x.Data, w.Data)>0)
         {
             if (w.Right == null)
             {
                 w.Right = x;
+                w.Right.Parent = w;
             }
             else
             {
@@ -76,6 +92,7 @@ public class BspTree<T>(IComparer<T> comparer)
             if (w.Left == null)
             {
                 w.Left = x;
+                w.Left.Parent = w;
             }
             else
             {
@@ -84,7 +101,7 @@ public class BspTree<T>(IComparer<T> comparer)
         }
     }
 
-    private void Remove(T data, Vertex w)
+    private void Remove(T? data, Vertex w)
     {
         if (w.Left != null && w.Left.Data!.Equals(data))
         {
@@ -105,10 +122,38 @@ public class BspTree<T>(IComparer<T> comparer)
             return;
         }
 
-        Remove(data, comparer.Compare(data, w.Data) >= 0 ? w.Right! : w.Left!);
+        Remove(data, comparer.Compare(data, w.Data) > 0 ? w.Right! : w.Left!);
+    }
+    
+    private void Remove(Vertex data, Vertex w)
+    {
+
+        Console.WriteLine("remove in");
+        if (data == w)
+        {
+            Console.WriteLine("com jest");
+            if (w.Parent.Right!.Equals(w))
+            {
+                w.Parent.Right = null;
+            }
+            else
+            {
+                w.Parent.Left = null;
+            }
+
+            w.Next.Last = w.Last;
+            w.Last.Next = w.Next;
+            if (w.Left != null) Add(w.Left, w.Parent);
+            if (w.Right != null) Add(w.Right, w.Parent);
+            return;
+        }
+        Remove(data, comparer.Compare(data.Data, w.Data) > 0 ? w.Right! : w.Left!);
+       
+
+        
     }
 
-    private Vertex Get(T data, Vertex w)
+    private Vertex Get(T? data, Vertex w)
     {
         if (w.Data!.Equals(data))
         {
@@ -122,7 +167,7 @@ public class BspTree<T>(IComparer<T> comparer)
 
         return Get(data, w.Left!);
     }
-    private Vertex FindFirst(T data, Vertex w)
+    private Vertex FindFirst(T? data, Vertex w)
     {
         Console.WriteLine($"find first ");
         int compResult = comparer.Compare(data, w.Data);
@@ -139,7 +184,36 @@ public class BspTree<T>(IComparer<T> comparer)
         return FindFirst(data, w.Left!);
     }
 
-    private bool Exist(T data,Vertex w)
+    private Vertex? LowerBound(T? data,Vertex? w)
+    {
+        if ( comparer.Compare(data,w!.Data) <= 0 )
+        {
+            
+            if (w.Left == null) return w;
+            Vertex? res = LowerBound(data, w.Left);
+            if (res == null ) return w;
+            return res;
+        }
+        Console.WriteLine("niew adsad");
+        if (w.Right == null) return null;
+        return LowerBound(data, w.Right);
+    }
+    private Vertex? LowerBound(double data,Vertex? w)
+    {
+        Console.WriteLine("hus");
+        if ( compareDouble.Compare(data,w!.Data) <= 0 )
+        {
+            
+            if (w.Left == null) return w;
+            Vertex? res = LowerBound(data, w.Left);
+            if (res == null ) return w;
+            return res;
+        }
+        Console.WriteLine("niew adsad");
+        if (w.Right == null) return null;
+        return LowerBound(data, w.Right);
+    }
+    private bool Exist(T? data,Vertex w)
     {
         if (w.Data!.Equals(data))
         {
@@ -155,27 +229,66 @@ public class BspTree<T>(IComparer<T> comparer)
     }
     
 
-    public Vertex Add(T data)
+    public Vertex Add(T? data)
     {
         if (_root == null)
         {
             _root = new Vertex(data);
+            _root.Next = _end;
+            _root.Last = _end;
+            _end.Next = _root;
+            _end.Last = _root;
+            _root.Parent = null;
             return _root;
         }
         return Add(data, _root);
     }
 
-    public Vertex Get(T data)
+    public Vertex Get(T? data)
     {
         return Get(data, _root!);
     }
 
     public void Remove(Vertex w)
     {
-        Remove(w.Data);
+        if (w.Equals(_root))
+        {
+            w.Next.Last = w.Last;
+            w.Last.Next = w.Next;
+            if (w.Right != null)
+            {
+                _root = w.Right;
+                _root.Parent = null;
+            }else if (w.Left != null)
+            {
+                _root = w.Last;
+                _root.Parent = null;
+            }
+            else
+            {
+                _root = null;
+            }
+            return;
+        }
+        Console.WriteLine("remive rest");
+        if (w.Equals(w.Parent!.Right) )
+        {
+            w.Parent.Right = null;
+        }
+        else
+        {
+            w.Parent.Left = null;
+        }
+
+        w.Next.Last = w.Last;
+        w.Last.Next = w.Next;
+        Console.WriteLine("cos tam");
+        if (w.Left != null) Add(w.Left, w.Parent);
+        if (w.Right != null) Add(w.Right, w.Parent);
+       
     }
 
-    public void Remove(T data)
+    public void Remove(T? data)
     {
         if (_root!.Data!.Equals(data))
         {
@@ -212,14 +325,32 @@ public class BspTree<T>(IComparer<T> comparer)
         Remove(data,_root);
     }
     
-    public Vertex FindFirst(T data)
+    public Vertex FindFirst(T? data)
     {
         return FindFirst(data, _root!);
     }
 
-    public bool Exist(T data)
+    public Vertex LowerBound(T? data)
+    {
+        return LowerBound(data, _root)!;
+    }
+    public Vertex LowerBound(double data)
+    {
+        return  LowerBound(data, _root)!;
+    }
+
+    public bool Exist(T? data)
     {
         return _root != null && Exist(data, _root);
+    }
+
+    public Vertex GetEnd()
+    {
+        return _end;
+    }
+    public Vertex GetFirst()
+    {
+        return _end.Next;
     }
 
     public Vertex GetRoot()
