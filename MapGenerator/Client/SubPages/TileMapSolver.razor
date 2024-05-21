@@ -87,6 +87,15 @@
 		
 	}
 
+	public async Task SetedTiles()
+	{
+		foreach (var t in Map.SetTileDtos)
+		{
+			TileToSet.Invoke(t);
+		}
+	}
+	
+
 	private void Reduce(string by, int n, int m, int direction)
 	{
 		if (mapOfTile[n][m].Type != -1) return ;

@@ -1,9 +1,11 @@
 ﻿@page "/MapManager"
 @using Client.Services
 @using Shared.DTO
+@using Client.SubPages
 @inject MapService MapS
 @inject IJSRuntime Js
 @inject ILocalStorageService LocalStorageService
+
 
 <h3>MapManager</h3>
 <button type="submit" class="btn btn-primary" onclick="@CreateSetTrue">Stworz nowy zbior</button>
@@ -17,128 +19,24 @@
 		<button type="submit" class="btn btn-primary">Potwierdz</button>
 	</EditForm>
 }
-@if (sets)
-{
 
-	<table class="table">
-		<thead>
-			<tr>
-				<th>Nazwa zbiory</th>
-				<th>Edytuj</th>
-				<th>Usun</th>
-			</tr>
-		</thead>
-		<tbody>
-			@foreach (var ts in _tileSetDtos)
-			{
-				<tr>
-					<td>
-						<div>@ts.Name</div> </td>
-					<td>
-						<button class="btn btn-primary"
-						        @onclick="(() => SetCurrSet(ts))">
-							<i class="oi oi-pencil"></i>
-						</button>
-					</td>
-					<td>
-						<button class="btn btn-primary"
-						        @onclick="(() => DeleteCurrSet(ts.Id))">
-							<i class="oi btn-outline-danger"></i>
-						</button>
-					</td>
-				</tr>
-			}
-		</tbody>
-	</table>
-}
+
+<TileSetTable Look="false" Edit="true" Delete="true" EditTileSet="SetCurrSet"  DeleteTileSet="DeleteCurrSet" ></TileSetTable>
+
 @if (CurrSetDto.Id != 0)
 {
-	
-	<div class="input-group">
-		<div class="custom-file">
-			<InputFile class="custom-file-input" multiple OnChange="OnChange" accept="image/png, image/jpeg, image/gif" id="inputFile"/>
-			<label class="custom-file-label" for="inputFile">Dodaj grafike pola</label>
-		</div>
-	</div>
-
-	@if (imageToProces.Any())
-	{
-		<img class="fix-size" src="@imageToProces.First()" alt=""/>
-		<EditForm Model="creatTile" OnSubmit="CreateTile">
-			<div>
-				<label for="p0">left</label>
-				<InputText id="p0" @bind-Value="creatTile.P0" class="from-control" />
-			</div>
-			<div>
-				<label for="p1">Up</label>
-				<InputText id="p1" @bind-Value="creatTile.P1" class="from-control" />
-			</div>
-			<div>
-				<label for="p2">Right</label>
-				<InputText id="p2" @bind-Value="creatTile.P2" class="from-control" />
-			</div>
-			<div>
-				<label for="p3">Down</label>
-				<InputText id="p3" @bind-Value="creatTile.P3" class="from-control" />
-			</div>
-		
-			<div>
-				<label for="sym">Symmetry</label>
-				<InputSelect id="sym" @bind-Value="creatTile.TileSetId">
-					<option value=0 >Bez obrotu</option>
-					<option value=1 >obrut 90 stopni</option>
-					<option value=2 >4 obroty</option>
-				</InputSelect>
-			</div>
-			<button type="submit" class="btn btn-primary">Confirm</button>
-		
-		</EditForm>
-		
-		
-	}
-	<h3>@CurrSetDto.Id	</h3>
-	<h3>@CurrSetDto.Name </h3>
-	@if (tiles.Any())
-	{
-		<table class="table">
-			<thead>
-			<tr>
-				<th>Image</th>
-				<th>Edytuj</th>
-				<th>Usuń</th>
-			</tr>
-			</thead>
-			<tbody>
-			@foreach (var t in tiles)
-			{
-				<tr>
-					<td> <img src="@t.Url" alt=""/> </td>
-					<td>
-						<button class="btn btn-primary"
-						        @onclick="EditTile">
-							<i class="oi oi-pencil"></i>
-						</button>
-					</td>
-					<td>
-                        <button class="btn btn-primary"
-                                    @onclick="(() => DeleteTile(t.Id))">
-                            <i class="oi oi-pencil"></i>
-                        </button>
-                    </td>
-				</tr>
-			}
-			</tbody>
-		</table>
-	}
+	<TileView CurrSetDto="CurrSetDto"  tiles="tiles" Change="Change"></TileView>
 }
 
 
 @code {
     private TileSetDto tileSetDto = new TileSetDto();
     private TileSetDto CurrSetDto = new TileSetDto();
+    private List<TileDto> tiles = new List<TileDto>();
     private List<TileSetDto> _tileSetDtos { get; set; } =new List<TileSetDto>();
     private bool sets = false;
     private bool creatSet = false; 
+    
     public async Task CreateSet()
     {
         var res = await MapS.CreateTileSet(tileSetDto);
@@ -152,32 +50,17 @@
     {
 	    creatSet = true;
     }
-    private async Task SetCurrSet(TileSetDto tileSetDto)
+    private async void SetCurrSet(TileSetDto tile)
     {
-	    var res = await MapS.GetTiles(tileSetDto.Id);
-	    foreach (var t in res)
-	    {
-		   
-		  
-		    var url = await LocalStorageService.GetItemAsStringAsync("tile_" + t.Id);
-		    if (string.IsNullOrEmpty(url))
-		    {
-			    Stream stream = new MemoryStream(t.Image);
-			    var dotnetImageStream = new DotNetStreamReference(stream);
-			    url = await Js.InvokeAsync<string>("addImage", dotnetImageStream);
-			    await LocalStorageService.SetItemAsync("tile_" + t.Id, url);
-		    }
-
-		    t.Image = null;
-		    t.Url = url;
-		    tiles.Add(t);
-	    }
-	    CurrSetDto = tileSetDto;
 	    
+	    await MapS.GetTilesToHash(tile.Id);
+	    tiles = await MapS.GetTiles(tile.Id);
+	    CurrSetDto = tile;
+	    StateHasChanged();
     }
-    private async Task DeleteCurrSet(long setId)
+    private async void DeleteCurrSet(TileSetDto tile)
     {
-	    await MapS.DeleteTileSet(setId);
+	    await MapS.DeleteTileSet(tile.Id);
 	    _tileSetDtos =  await MapS.TileSets();
 	    sets = true;
 	    this.StateHasChanged();
@@ -189,110 +72,13 @@
 	    this.StateHasChanged();
     }
 
-    private List<string> imageToProces = new List<string>();
-    async Task OnChange(InputFileChangeEventArgs e)
+    private async void Change()
     {
-	    var files = e.GetMultipleFiles(); 
-	    foreach (var file in files)
-	    {
-		    var resizedFile = await file.RequestImageFileAsync(file.ContentType, 480, 480);
-		    var buf = new byte[resizedFile.Size];
-		    using (var stream = resizedFile.OpenReadStream())
-		    {
-			    var dotnetImageStream = new DotNetStreamReference(stream);
-			    imageToProces.Add(await Js.InvokeAsync<string>("addImage", dotnetImageStream));
-		    }
-	    }
+	    await MapS.GetTilesToHash(CurrSetDto.Id);
+	    tiles = await MapS.GetTiles(CurrSetDto.Id);
+	  
     }
-
-    private TileDto creatTile = new TileDto();
-    private List<TileDto> tiles = new List<TileDto>();
     
-    private async Task CreateTile()
-    {
-	    Console.WriteLine();
-	    string?[] connection = new[] { creatTile.P0,creatTile.P1,creatTile.P2,creatTile.P3};
-	    string url = imageToProces.First();
-	    int symmetry = (int )creatTile.TileSetId;
-	    creatTile.TileSetId = CurrSetDto.Id;
-	    
-	    switch (symmetry)
-	    {
-		    case 0:
-			    creatTile = await MapS.AddTile(creatTile, url);
-			    await LocalStorageService.SetItemAsync("tile_"+creatTile.Id, url);
-			    creatTile.Url = url;
-			    tiles.Add(creatTile);
-			    break;
-		    case 1:
-			    creatTile = await MapS.AddTile(creatTile, url);
-			    await LocalStorageService.SetItemAsync("tile_"+creatTile.Id, url);
-			    creatTile.Url = url;
-			    tiles.Add(creatTile);
-			
-			    url = await Js.InvokeAsync<string>("rotateImage90", url);
-			    creatTile.P0 = connection[1];
-			    creatTile.P1 = connection[2];
-			    creatTile.P2 = connection[3];
-			    creatTile.P3 = connection[0];
-			    creatTile = await MapS.AddTile(creatTile, url);
-			    await LocalStorageService.SetItemAsync("tile_"+creatTile.Id, url);
-			    creatTile.Url = url;
-			    tiles.Add(creatTile);
-			  
-			    break;
-		    case 2:
-			    creatTile = await MapS.AddTile(creatTile, url);
-			    await LocalStorageService.SetItemAsync("tile_"+creatTile.Id, url);
-			    creatTile.Url = url;
-			    tiles.Add(creatTile);
-			
-			    url = await Js.InvokeAsync<string>("rotateImage90", url);
-			    creatTile.P0 = connection[1];
-			    creatTile.P1 = connection[2];
-			    creatTile.P2 = connection[3];
-			    creatTile.P3 = connection[0];
-			    creatTile = await MapS.AddTile(creatTile, url);
-			    await LocalStorageService.SetItemAsync("tile_"+creatTile.Id, url);
-			    creatTile.Url = url;
-			    tiles.Add(creatTile);
-			    
-			    url = await Js.InvokeAsync<string>("rotateImage90", url);
-			    creatTile.P0 = connection[2];
-			    creatTile.P1 = connection[3];
-			    creatTile.P2 = connection[0];
-			    creatTile.P3 = connection[1];
-			    creatTile = await MapS.AddTile(creatTile, url);
-			    await LocalStorageService.SetItemAsync("tile_"+creatTile.Id, url);
-			    creatTile.Url = url;
-			    tiles.Add(creatTile);
-			    
-			    url = await Js.InvokeAsync<string>("rotateImage90", url);
-			    creatTile.P0 = connection[3];
-			    creatTile.P1 = connection[0];
-			    creatTile.P2 = connection[1];
-			    creatTile.P3 = connection[2];
-			    creatTile = await MapS.AddTile(creatTile, url);
-			    await LocalStorageService.SetItemAsync("tile_"+creatTile.Id, url);
-			    creatTile.Url = url;
-			    tiles.Add(creatTile);
-			    
-			    break;
-			    
-	    }
-	    
-	    
-	    imageToProces.RemoveAt(0);
-	    creatTile = new TileDto();
-    }
-
    
-    public void EditTile()
-    {
-	    
-    }
-    public async Task DeleteTile(long tileId)
-    {
-	    await MapS.DeleteTile(tileId);
-    }
+   
 }

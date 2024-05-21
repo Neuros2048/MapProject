@@ -42,12 +42,13 @@
      
          pos.X = (int) Math.Round(e.ClientX- p.Left);
          pos.Y = (int) Math.Round(e.ClientY- p.Top);
-     
+        Console.WriteLine($"{pos.X}  {pos.Y}");
         OnMouseClick?.Invoke(pos);
     }
 
     public async Task SetTile(int x,int y,long tileId,int size)
     {
+        
         await Js.InvokeVoidAsync("eval", $"myimage = document.getElementById('tileidurl_{tileId}')");
         await using (var ctx = await _context.GetContext2DAsync())
         {

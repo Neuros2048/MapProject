@@ -51,8 +51,9 @@
 	
 	[Parameter] public GeneratedMapDto Map { get; set; } = new GeneratedMapDto();
 	[Parameter] public Action? GenerateMap { get; set; }
-	
-	
+	[Parameter] public Action<long> TileClick { get; set; } = null!;
+
+
 	private void IncreaseWeight(int i)
 	{
 		Map.TileWeightDtos[i].Weight++;
@@ -66,9 +67,9 @@
 		await MapS.SaveGeneratedMap(Map);
 	}
 	
-	private Task ChosenTile(long tileId)
+	private void ChosenTile(long tileId)
 	{
-		throw new NotImplementedException();
+		TileClick.Invoke(tileId);
 	}
 	
 	

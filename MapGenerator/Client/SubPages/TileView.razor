@@ -1,0 +1,252 @@
+﻿@using Shared.DTO
+@using Client.Services
+
+@inject MapService MapS
+@inject IJSRuntime Js
+@inject ILocalStorageService LocalStorageService
+
+	
+<div class="input-group">
+	<div class="custom-file">
+		<InputFile class="custom-file-input" multiple OnChange="OnChange" accept="image/png, image/jpeg, image/gif" id="inputFile"/>
+		<label class="custom-file-label" for="inputFile">Dodaj grafike pola</label>
+	</div>
+</div>
+
+@if (imageToProces.Any())
+{
+	<img class="fix-size" src="@imageToProces.First()" alt=""/>
+	<EditForm Model="creatTile" OnSubmit="CreateTile">
+		<div>
+			<label for="p0">left</label>
+			<InputText id="p0" @bind-Value="creatTile.P0" class="from-control" />
+		</div>
+		<div>
+			<label for="p1">Up</label>
+			<InputText id="p1" @bind-Value="creatTile.P1" class="from-control" />
+		</div>
+		<div>
+			<label for="p2">Right</label>
+			<InputText id="p2" @bind-Value="creatTile.P2" class="from-control" />
+		</div>
+		<div>
+			<label for="p3">Down</label>
+			<InputText id="p3" @bind-Value="creatTile.P3" class="from-control" />
+		</div>
+	
+		<div>
+			<label for="sym">Symmetry</label>
+			<InputSelect id="sym" @bind-Value="creatTile.TileSetId">
+				<option value=0 >Bez obrotu</option>
+				<option value=1 >obrut 90 stopni</option>
+				<option value=2 >4 obroty</option>
+			</InputSelect>
+		</div>
+		<button type="submit" class="btn btn-primary">Confirm</button>
+	
+	</EditForm>
+	
+	
+}
+
+
+@if (Edit)
+{
+	<img class="fix-size" src="@MapS.TilesUrl[editTile.Id].Url" alt=""/>
+	<EditForm Model="editTile" OnSubmit="SubmitEdit">
+		<div>
+			<label for="p0">left</label>
+			<InputText id="p0" @bind-Value="editTile.P0" class="from-control" />
+		</div>
+		<div>
+			<label for="p1">Up</label>
+			<InputText id="p1" @bind-Value="editTile.P1" class="from-control" />
+		</div>
+		<div>
+			<label for="p2">Right</label>
+			<InputText id="p2" @bind-Value="editTile.P2" class="from-control" />
+		</div>
+		<div>
+			<label for="p3">Down</label>
+			<InputText id="p3" @bind-Value="editTile.P3" class="from-control" />
+		</div>
+		
+		<button type="submit" class="btn btn-primary">Confirm</button>
+		<button type="button" class="btn btn-danger" onclick="@Anuluj">Anuluj</button>
+	
+	</EditForm>
+	
+	
+}
+
+@if (tiles.Any())
+{
+	<table class="table">
+		<thead>
+		<tr>
+			<th>Image</th>
+			<th>Edytuj</th>
+			<th>Usuń</th>
+		</tr>
+		</thead>
+		<tbody>
+		@foreach (var t in tiles)
+		{
+			<tr>
+				<td> <img src="@MapS.TilesUrl[t.Id].Url" alt=""/> </td>
+				<td>
+					<button class="btn btn-primary"
+					        @onclick="() => EditTile(t)">
+						<i class="oi oi-pencil"></i>
+					</button>
+				</td>
+				<td>
+                    <button class="btn btn-primary"
+                                @onclick="(() => DeleteTile(t.Id))">
+                        <i class="oi oi-pencil"></i>
+                    </button>
+                </td>
+			</tr>
+		}
+		</tbody>
+	</table>
+}
+
+
+@code {
+	
+	[Parameter]
+	public TileSetDto CurrSetDto { get; set; } = new TileSetDto();
+	private List<string> imageToProces = new List<string>();
+	private TileDto creatTile = new TileDto();
+	[Parameter]
+	public List<TileDto> tiles { get; set; } = new List<TileDto>();
+
+	private bool Edit = false;
+	private TileDto editTile = new TileDto();
+	
+	[Parameter] public Action? Change { get; set; }
+	async Task OnChange(InputFileChangeEventArgs e)
+	{
+		var files = e.GetMultipleFiles(30); 
+		foreach (var file in files)
+		{
+			var resizedFile = await file.RequestImageFileAsync(file.ContentType, 480, 480);
+			var buf = new byte[resizedFile.Size];
+			using (var stream = resizedFile.OpenReadStream())
+			{
+				var dotnetImageStream = new DotNetStreamReference(stream);
+				imageToProces.Add(await Js.InvokeAsync<string>("addImage", dotnetImageStream));
+			}
+		}
+	}
+	
+	private async Task CreateTile()
+    {
+	    Console.WriteLine(creatTile.P0);
+	    string?[] connection = new[] { creatTile.P0,creatTile.P1,creatTile.P2,creatTile.P3};
+	    Console.WriteLine("hejos2");
+	    string url = imageToProces.First();
+	    int symmetry = (int )creatTile.TileSetId;
+	    creatTile.TileSetId = CurrSetDto.Id;
+	    Console.WriteLine("hejos232");
+	    switch (symmetry)
+	    {
+		    case 0:
+			    creatTile = await MapS.AddTile(creatTile, url);
+			    break;
+		    case 1:
+			    creatTile = await MapS.AddTile(creatTile, url);
+			    tiles.Add(creatTile);
+			
+			    url = await Js.InvokeAsync<string>("rotateImage90", url);
+			    creatTile.P0 = connection[1];
+			    creatTile.P1 = connection[2];
+			    creatTile.P2 = connection[3];
+			    creatTile.P3 = connection[0];
+			    creatTile = await MapS.AddTile(creatTile, url);
+			    
+			  
+			    break;
+		    case 2:
+			    creatTile = await MapS.AddTile(creatTile, url);
+			    tiles.Add(creatTile);
+			
+			    url = await Js.InvokeAsync<string>("rotateImage90", url);
+			    creatTile.P0 = connection[1];
+			    creatTile.P1 = connection[2];
+			    creatTile.P2 = connection[3];
+			    creatTile.P3 = connection[0];
+			    creatTile = await MapS.AddTile(creatTile, url);
+			    await LocalStorageService.SetItemAsync("tile_"+creatTile.Id, url);
+			    creatTile.Url = url;
+			    tiles.Add(creatTile);
+			    
+			    url = await Js.InvokeAsync<string>("rotateImage90", url);
+			    creatTile.P0 = connection[2];
+			    creatTile.P1 = connection[3];
+			    creatTile.P2 = connection[0];
+			    creatTile.P3 = connection[1];
+			    creatTile = await MapS.AddTile(creatTile, url);
+			    await LocalStorageService.SetItemAsync("tile_"+creatTile.Id, url);
+			    creatTile.Url = url;
+			    tiles.Add(creatTile);
+			    
+			    url = await Js.InvokeAsync<string>("rotateImage90", url);
+			    creatTile.P0 = connection[3];
+			    creatTile.P1 = connection[0];
+			    creatTile.P2 = connection[1];
+			    creatTile.P3 = connection[2];
+			    creatTile = await MapS.AddTile(creatTile, url);
+			    await LocalStorageService.SetItemAsync("tile_"+creatTile.Id, url);
+			    creatTile.Url = url;
+			    tiles.Add(creatTile);
+			    
+			    break;
+			    
+	    }
+	    
+	    
+	    imageToProces.RemoveAt(0);
+	    creatTile = new TileDto();
+	    Change!.Invoke();
+    }
+
+
+	private void EditTile(TileDto tileDto)
+	{
+		editTile = tileDto;
+		
+		Edit = true;
+	}
+
+	private async void DeleteTile(long tileId)
+	{
+			
+		await MapS.DeleteTile(tileId);
+		Change!.Invoke();
+	}
+
+	private async void SubmitEdit()
+	{
+		
+		Edit = false;
+		for (int i = 0; i < tiles.Count; i++)
+		{
+			if (tiles[i].Id == editTile.Id)
+			{
+				tiles[i] = editTile;
+				break;
+			}
+		}
+		await MapS.UpdateTile(editTile);
+
+	}
+
+	private void Anuluj()
+	{
+		Edit = false;
+	}
+
+
+}

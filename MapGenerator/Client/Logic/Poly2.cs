@@ -2,7 +2,7 @@
 
 public class Poly2
 {
-    public Poly2(int xMax, int xMin, int yMax, int yMin)
+    public Poly2(long xMax, long xMin, long yMax, long yMin)
     {
         this.xMax = xMax;
         this.xMin = xMin;
@@ -12,10 +12,10 @@ public class Poly2
 
     public class Point
     {
-        public int X;
-        public int Y;
+        public long X;
+        public long Y;
 
-        public Point(int x, int y)
+        public Point(long x, long y)
         {
             this.X = x;
             this.Y = y;
@@ -28,10 +28,10 @@ public class Poly2
         }
     }
 
-    private int xMax;
-    private int xMin;
-    private int yMax;
-    private int yMin;
+    private long xMax;
+    private long xMin;
+    private long yMax;
+    private long yMin;
  
     
     public class Edge
@@ -63,7 +63,7 @@ public class Poly2
         public Edge E;
         public List<Point> Points;
 
-        public Center(Point p,int xMax,int xMin,int yMax,int yMin)
+        public Center(Point p,long xMax,long xMin,long yMax,long yMin)
         {
             P = p;
             E = new Edge(new Point(xMin, yMin));
@@ -84,12 +84,12 @@ public class Poly2
         //List<Center> centers = new List<Center>();
        
 
-        int n = centers.Count;
+        long n = centers.Count;
         Edge inter1 = centers[0].E, inter2;
         Edge end, curr;
         Point m = new Point(-1, -1);
         Point a,b,c,d = m;
-        int o1, o2;
+        long o1, o2;
         bool one;
         for (int i = 0; i < n; i++)
         {
@@ -112,7 +112,7 @@ public class Poly2
                         o2 = orientation(a, b, curr.Point);
                         if (o1 == 0 || o2 == 0 || o1 != o2)
                         {
-                            c = lineLineIntersection(a, b, curr.Previous.Point, curr.Point);
+                            c = LineLineIntersection(a, b, curr.Previous.Point, curr.Point);
 
                             if (!one)
                             {
@@ -124,8 +124,12 @@ public class Poly2
                             else
                             {
                                 inter2 = curr;
-                              
-                                if (orientation(d, c, centers[i].P) > 0)
+                                
+                                if (orientation(d, c, centers[i].P) == 0)
+                                {
+                                    Console.WriteLine($"orientacja -0- {d.X} {d.Y} {c.X} {c.Y} {centers[i].P.X} {centers[i].P.Y}");
+                                }
+                                if (orientation(d, c, centers[i].P) >= 0)
                                 {
                                     
                                     centers[i].E = new Edge(inter1.Previous, inter2, d);
@@ -142,36 +146,7 @@ public class Poly2
                             }
 
                         }
-
-
-                        /*if (c.X != -1)
-                        {
-
-                            else
-                            {
-                                inter2 = curr;
-                                orientation(a,b)
-
-                                Console.WriteLine("hej4");
-                                if (CrossProduct(d, c,centers[i].P ) )
-                                {
-                                    inter1.Previous = inter2;
-                                    inter2.Next = inter1;
-                                    centers[i].E = new Edge(inter2, inter1, d);
-                                    centers[i].E = new Edge(inter2, inter1.Previous, c);
-                                }
-                                else
-                                {
-                                    inter1.Next = inter2;
-                                    inter2.Previous = inter1;
-                                    centers[i].E = new Edge(inter1, inter2, c);
-                                    centers[i].E = new Edge(inter1, inter2.Previous, d);
-                                }
-                                Console.WriteLine("hej5");
-                                break;
-                            }
-
-                        }*/
+                        
                         curr = curr.Next;
 
                     } while (curr != end);
@@ -182,12 +157,12 @@ public class Poly2
         return centers;
     }
     
-    public  int orientation(Point p1, Point p2,
+    public  long orientation(Point p1, Point p2,
         Point p3)
     {
         // See 10th slides from following link 
         // for derivation of the formula
-        int val = (p2.Y - p1.Y) * (p3.X - p2.X) -
+        long val = (p2.Y - p1.Y) * (p3.X - p2.X) -
                   (p2.X - p1.X) * (p3.Y - p2.Y);
  
         if (val == 0) return 0; 
@@ -198,19 +173,19 @@ public class Poly2
     
     public static Point DoLinesIntersect(Point x1, Point x2, Point x3, Point x4)
     {
-        int dx1 = x2.X - x1.X;
-        int dy1 = x2.Y - x1.Y;
-        int dx2 = x4.X - x3.X;
-        int dy2 = x4.Y - x3.Y;
+        long dx1 = x2.X - x1.X;
+        long dy1 = x2.Y - x1.Y;
+        long dx2 = x4.X - x3.X;
+        long dy2 = x4.Y - x3.Y;
 
-        int crossProduct1 = dx1 * (x3.Y - x1.Y) - dy1 * (x3.X - x1.X);
-        int crossProduct2 = dx1 * (x4.Y - x1.Y) - dy1 * (x4.X - x1.X);
+        long crossProduct1 = dx1 * (x3.Y - x1.Y) - dy1 * (x3.X - x1.X);
+        long crossProduct2 = dx1 * (x4.Y - x1.Y) - dy1 * (x4.X - x1.X);
 
-        int crossProduct3 = dx2 * (x1.Y - x3.Y) - dy2 * (x1.X - x3.X);
-        int crossProduct4 = dx2 * (x2.Y - x3.Y) - dy2 * (x2.X - x3.X);
+        long crossProduct3 = dx2 * (x1.Y - x3.Y) - dy2 * (x1.X - x3.X);
+        long crossProduct4 = dx2 * (x2.Y - x3.Y) - dy2 * (x2.X - x3.X);
 
         
-        int d = dx1 * dy2 - dy1 * dx2;
+        long d = dx1 * dy2 - dy1 * dx2;
         if (d == 0)
         {
             
@@ -220,8 +195,8 @@ public class Poly2
        
         if (crossProduct1 * crossProduct2 <= 0 && crossProduct3 * crossProduct4 <= 0)
         {
-            int px = (x1.X * dy1 * dx2 + x1.Y * dx1 * dx2 - x3.X * dy2 * dx1 + x3.Y * dy1 * dx2) / d;
-            int py = (x1.Y * dx1 * dy2 + x3.X * dy2 * dy1 - x1.X * dy1 * dy2 + x3.Y * dx1 * dy2) / d;
+            long px = (x1.X * dy1 * dx2 + x1.Y * dx1 * dx2 - x3.X * dy2 * dx1 + x3.Y * dy1 * dx2) / d;
+            long py = (x1.Y * dx1 * dy2 + x3.X * dy2 * dy1 - x1.X * dy1 * dy2 + x3.Y * dx1 * dy2) / d;
             return new Point(px, py);
         }
 
@@ -233,7 +208,7 @@ public class Poly2
         return (b.X - a.X) * (c.Y - a.Y) - (b.Y - a.Y) * (c.X - a.X)<0;
     }
 
-    public static Point lineLineIntersection(Point A, Point B, Point C, Point D)
+    private static Point LineLineIntersection(Point A, Point B, Point C, Point D)
     {
         double a1 = B.Y - A.Y;
         double b1 = A.X - B.X;
@@ -252,16 +227,16 @@ public class Poly2
         {
             double x = (b2 * c1 - b1 * c2) / determinant;
             double y = (a1 * c2 - a2 * c1) / determinant;
-            return new Point((int) Math.Round(  x),(int) Math.Round(y));
+            return new Point((long) Math.Round(  x),(long) Math.Round(y));
         }
     }
     private void PunktyGraniczne(Point p1,Point p2, out Point p3, out Point p4)
     {
 
-        int x = (p1.X + p2.X) / 2;
-        int y = (p1.Y + p2.Y) / 2;
-        int vy =-1* (p2.X - p1.X);
-        int vx = p2.Y - p1.Y;
+        long x = (p1.X + p2.X) / 2;
+        long y = (p1.Y + p2.Y) / 2;
+        long vy =-1* (p2.X - p1.X);
+        long vx = p2.Y - p1.Y;
          
        
        
@@ -279,7 +254,7 @@ public class Poly2
            return;
        }
 
-       int wx, wy;
+       long wx, wy;
       
        if (vx < 0 && vy < 0)
        {

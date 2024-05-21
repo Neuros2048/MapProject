@@ -26,7 +26,7 @@ public class MapService
     public List<TileSetDto> TileSetDtos = new List<TileSetDto>();
     public async Task<byte[]> SendImageToServer(string url)
     {
-        // Convert byte array to base64 string
+        
         var response = await _http.GetAsync(url);
         byte[] imageData = await response.Content.ReadAsByteArrayAsync();
         Console.WriteLine(Convert.ToBase64String(imageData));
@@ -34,7 +34,6 @@ public class MapService
         {
             Id = 0,
             Image = imageData
-           // image = Convert.ToBase64String(imageData)
         };
         var r1 = await _http.GetAsync("api/Map/get");
         Console.WriteLine(r1.IsSuccessStatusCode);
@@ -44,9 +43,8 @@ public class MapService
         Console.WriteLine(result.IsSuccessStatusCode);
         var r2 = await result.Content.ReadFromJsonAsync<TileDto>();
         Console.WriteLine(r2.Image);
-        byte[] fileBytes = r2.Image;//Convert.FromBase64String(r2.image);
+        byte[] fileBytes = r2.Image;
         return fileBytes;
-        // Send the base64 string to the server
     }
     
     public async Task<List<TileSetDto>> TileSets()
@@ -63,6 +61,7 @@ public class MapService
     }
     public async Task<TileDto> AddTile(TileDto tileDto, string url)
     {
+        
         var response = await _http.GetAsync(url);
         byte[] imageData = await response.Content.ReadAsByteArrayAsync();
         tileDto.Image = imageData;
@@ -159,8 +158,7 @@ public class MapService
     
     public async Task<bool> GetBaseTile()
     {
-        //if (string.IsNullOrEmpty(await _localStorageService.GetItemAsStringAsync(tileKey + 1)))
-        //{
+        
             var res = await _http.GetAsync(_controllerBase + "GetBaseTile");
             if (!res.IsSuccessStatusCode) return false!;
             var image = (await res.Content.ReadFromJsonAsync<SuccessData<TileDto>>()).Data;
@@ -168,10 +166,18 @@ public class MapService
             var dotnetImageStream = new DotNetStreamReference(stream);
             string url = await _js.InvokeAsync<string>("addImage", dotnetImageStream);
             await _localStorageService.SetItemAsync(tileKey + 1, url);
-        //}
+        
         
         return true; 
     }
+
+    public async Task<bool> UpDateTile(TileDto tileDto)
+    {
+        var res = await _http.PutAsJsonAsync(_controllerBase + "UpdateTile", tileDto);
+        if (res.IsSuccessStatusCode) return true;
+        return false;
+    }
+    
     
     
 }

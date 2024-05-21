@@ -18,37 +18,52 @@
     {
         await _canvasPolygon.DrawPoint(pos.X, pos.Y);
     }
-
+  
+    
+    double[][] output;
     private async void GenMap()
     {
         Random rnd;
         int seed = (int)DateTime.Now.Ticks & 0x0000FFFF;
+        Console.WriteLine(seed);
         rnd = new Random(seed);
         int wight = _canvasPolygon.GetWight();
         int height = _canvasPolygon.GetHeight();
-        Console.WriteLine("hej");
-        await _canvasPolygon.DrawPoint(400,400);
-        int pn = 200;
+  
+        int pn = 400;
         await _canvasPolygon.ClearMap();
+       
         List<PolygonMapService.Point> points = new List<PolygonMapService.Point>();
-        ;/*{
-            
-        };*/
         for (int i = 0; i < pn; i++)
         {
             points.Add( new PolygonMapService.Point(rnd.Next(wight), rnd.Next(height)));
             //await _canvasPolygon.DrawPoint(rnd.Next(wight), rnd.Next(height));
         }
-        // 
-        foreach (var ps in points)
+        //
+        Noise noise = new Noise();
+       
+        noise.PerlinNoise2D(800,800,432,4,1.0,out output);
+        
+        Console.WriteLine($"{output[0][200]} OK");
+
+
+        
+
+        int[][] nois = new int[wight][];
+        for (int i = 0; i < wight; i++)
         {
-            Console.WriteLine($"puntk {ps.X} {ps.Y}");
+            nois[i] = new int[height];
         }
+        //perlinNoise = new Noise(42); // Seed can be any integer
       
+        
+        //noise = perlinNoise.GeneratePerlinNoise(wight, height, 10);
+        
+        
         
         List<Poly2.Center> centers = new List<Poly2.Center>();
         //        points.Select(x => new Poly2.Point((int)x.X, (int)x.Y)).ToList()
-        points.ForEach(p=> centers.Add(new Poly2.Center(new Poly2.Point((int)p.X, (int)p.Y),800,0,800,0)));
+        points.ForEach(p=> centers.Add(new Poly2.Center(new Poly2.Point((int)p.X*100, (int)p.Y*100),800*100,0,800*100,0)));
         
        
         centers = await drawCentres(centers);
@@ -74,40 +89,55 @@
 
         for (int i = 0; i < centers.Count; i++)
         {
-            centers[i] = new Poly2.Center(centers[i].P, 800, 0, 800, 0);
+            centers[i] = new Poly2.Center(centers[i].P, 800*100, 0, 800*100, 0);
         }
 
-        await Task.Delay(100);
+        await Task.Delay(1);
         await drawCentres(centers);
 
-
+        
 
     }
 
     private async Task<List<Poly2.Center>> drawCentres(List<Poly2.Center> centers)
     {
         
-        var oper = new Poly2(800,0,800,0);
+        var oper = new Poly2(800*100,0,800*100,0);
         centers = oper.Solve(centers);
         await _canvasPolygon.ClearMap();
         int j =0;
+        
         foreach (var pol in centers)
         {
-            await _canvasPolygon.ChangeColor(j++);
-     
+            await _canvasPolygon.ChangeColorLine(j++);
+            
             var a = pol.E;
             var next = a;
-            await _canvasPolygon.DrawPoint(pol.P.X, pol.P.Y);
-            foreach (var p in pol.Points)
+            var px = pol.P.X / 100;
+            var py = pol.P.Y / 100;
+            Console.WriteLine(output[ px][py]);
+            if (output[ px][py] > 0.7)
             {
-                //await _canvasPolygon.Drawline(p.X, p.Y, pol.P.X, pol.P.Y);
+                await _canvasPolygon.ChangeColorFill(CanvasPolygon.LandTypes.Gory);
             }
-            do
+            else if (output[ px][py]  > 0.4)
             {
-                await _canvasPolygon.Drawline( next.Previous.Point.X, next.Previous.Point.Y,next.Point.X, next.Point.Y);
+                await _canvasPolygon.ChangeColorFill(CanvasPolygon.LandTypes.Las);
+            }
+            else
+            {
+                await _canvasPolygon.ChangeColorFill(CanvasPolygon.LandTypes.Woda);
+            }
+            await _canvasPolygon.DrawPoint((int)pol.P.X/100,(int) pol.P.Y/100);
+            await _canvasPolygon.DrawShape(pol,100);
+            //Console.WriteLine($"centrum {j} numer {pol.P.X} {pol.P.Y}");
+            /*do
+            {
+                await _canvasPolygon.Drawline( (int)next.Previous.Point.X/100, (int)next.Previous.Point.Y/100,(int)next.Point.X/100, (int)next.Point.Y/100);
                 next = next.Next;
-            } while (a != next);
-            
+            } while (a != next);*/
+
+            await Task.Delay(1);
         }
 
         return centers;
