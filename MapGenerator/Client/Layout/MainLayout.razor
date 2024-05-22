@@ -1,16 +1,66 @@
 ﻿@inherits LayoutComponentBase
+@inject ILocalStorageService LocalStorageService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
 <div class="page">
+    
     <div class="sidebar">
-        <NavMenu />
+        <NavMenu/>
     </div>
 
     <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
+        
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <AuthorizeView>
+                <Authorized>
+                     <div class="container-fluid d-flex justify-content-end">
+                        <!-- Move dropdown menu to the right -->
+                        <div class="navbar-collapse d-flex justify-content-end" id="navbarNavDarkDropdown">
+                            <ul class="navbar-nav">
+                                <li class="nav-item dropstart">
+                                    <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        @context.User.Identity?.Name!
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink">
+                                        <NavLink class="nav-link" href="changepassword">
+                                            <span class="oi oi-list-rich" aria-hidden="true"></span> Zmień password
+                                        </NavLink>
+                                        <NavLink class="nav-link" href="#" @onclick="Logout">
+                                            <span class="oi oi-list-rich" aria-hidden="true"></span> Wyloguj
+                                        </NavLink>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </Authorized>
+                <NotAuthorized>
+                    
+                    <div class="container-fluid d-flex justify-content-end">
+                        <NavLink class="nav-link" href="Login">
+                            <span class="oi oi-list-rich" aria-hidden="true"></span> Zaloguj
+                        </NavLink>
+                        <NavLink class="nav-link" href="register">
+                            <span class="oi oi-list-rich " aria-hidden="true"></span> Zarejestruj się
+                        </NavLink>
+                    </div>
+                </NotAuthorized>
+            </AuthorizeView>
+        </nav>
+
+ 
 
         <article class="content px-4">
             @Body
         </article>
     </main>
 </div>
+
+@code{
+    private async Task Logout()
+    {
+        await LocalStorageService.RemoveItemAsync("authToken");
+        await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        NavigationManager.NavigateTo("/Login");
+    }
+}

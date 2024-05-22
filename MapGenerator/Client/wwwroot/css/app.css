@@ -1,5 +1,6 @@
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background: #86b7fe;
 }
 
 h1:focus {
@@ -9,6 +10,8 @@ h1:focus {
 a, .btn-link {
     color: #0071c1;
 }
+
+
 .loader {
     border: 16px solid #f3f3f3; /* Light grey */
     border-top: 16px solid #3498db; /* Blue */
@@ -43,6 +46,20 @@ a, .btn-link {
     padding: 0; /* Remove padding */
 }
 
+.background-color {
+    --bs-bg-opacity:1;
+    background-color:rgba(#0a53be,var(--bs-bg-opacity))!important;
+    border: 2px solid #000000!important;
+}
+.transparent-element {
+    opacity: 0;
+}
+
+
+.text-font{
+    color: black;
+    
+}
 
 .image-grid img {
     margin: 0; /* Remove any default margins */
