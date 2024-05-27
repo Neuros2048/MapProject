@@ -8,21 +8,33 @@
 
 
 <h3>MapManager</h3>
-<button type="submit" class="btn btn-primary" onclick="@CreateSetTrue">Stworz nowy zbior</button>
-@if (creatSet)
-{
-	<EditForm Model="tileSetDto" OnSubmit="CreateSet">
-		<div>
-			<label for="tsname">Nazwa</label>
-			<InputText id="tsname" @bind-Value="tileSetDto.Name" class="from-control" />
+<div class="  text-white d-flex flex-row align-items-center justify-content-center" >
+	<div class="card bg-nice-black text-white" style="border-radius: 1rem; width: 18rem">
+		<div class="card-body p-5 ">
+			<div class="mb-3 ">
+				<button type="submit" class="btn btn-primary w-100 my-4 mb-2 " onclick="@CreateSetTrue">Stworz nowy zbior</button>
+			</div>
+			@if (creatSet)
+			{
+				<EditForm Model="tileSetDto" OnSubmit="CreateSet">
+					<div>
+						<div class="mb-2 ">
+							<InputText id="tsname" @bind-Value="tileSetDto.Name" class="from-control" placeholder="Nazwa"/>
+						</div>
+					</div>
+					<div class="  text-white d-flex flex-row align-items-center justify-content-center" style="border-radius: 1rem;">
+						<button type="submit" class="btn btn-primary w-100 my-4 mb-2 ">Potwierdz</button>
+						<div  style="width:10px"></div>
+						<button onclick="@ResetSet" class="btn btn-danger w-100 my-4 mb-2 ">anuluj</button>
+					</div>
+				</EditForm>
+			}
 		</div>
-		<button type="submit" class="btn btn-primary">Potwierdz</button>
-	</EditForm>
-}
-
-
-<TileSetTable Look="false" Edit="true" Delete="true" EditTileSet="SetCurrSet"  DeleteTileSet="DeleteCurrSet" ></TileSetTable>
-
+	</div>
+	<div  style="width :20px"></div>
+	<TileSetTable Look="false" Edit="true" Delete="true" EditTileSet="SetCurrSet"  DeleteTileSet="DeleteCurrSet" ></TileSetTable>
+</div>
+<div  style="height :20px"></div>
 @if (CurrSetDto.Id != 0)
 {
 	<TileView CurrSetDto="CurrSetDto"  tiles="tiles" Change="Change"></TileView>
@@ -44,6 +56,10 @@
         tileSetDto = new TileSetDto();
         CurrSetDto = res;
         creatSet = false;
+    }
+    private void ResetSet()
+    {
+	    creatSet = false;
     }
 
     private void CreateSetTrue()

@@ -3,62 +3,61 @@
 
 @inject MapService MapS
 
-
-<table class="table table-striped table-bordered table-hover">
-	<thead class="table-dark">
+<div class="card bg-nice-black text-white" style="border-radius: 1rem; width: 40rem">
+<div class="card-body p-5 ">
+	<table class="table table-striped table-bordered table-hover table-dark">
+		<thead class="table-dark">
 		<tr>
-			<th>Nazwa zbiory</th>
+			<th scope="col" class="col-3 text-center" >Nazwa zbiory</th>
 			@if (Look)
 			{
-				<th>Zobacz</th>
+				<th scope="col"  class="col-1 text-center">Zobacz</th>
 			}
 			@if (Edit)
 			{
-				<th>Edytuj</th>
+				<th scope="col" class="col-1 text-center">Edytuj</th>
 			}
 			@if (Delete)
 			{
-				<th>Usun</th>
+				<th scope="col" class="col-1 text-center">Usun</th>
 			}
 		</tr>
-	</thead>
-	<tbody>
+		</thead>
+		<tbody>
 		@foreach (var ts in MapS.TileSetDtos)
 		{
 			<tr>
-				<td>
+				<td class="text-center align-middle font" style="font-size: 2rem;">
 					<div>@ts.Name</div> </td>
 				@if (Look)
 				{
-					<td>
-						<button class="btn btn-primary"
-						        @onclick="(() => ChoseToLook(ts))">
-							<i class="oi oi-pencil"></i>
-						</button>
+					<td class="text-center">
+						
+						<i class="bi bi-eye-fill text-green icon-responsive" style="font-size: 2rem;" @onclick="() => ChoseToLook(ts)"></i>
 					</td>
 				}
 				@if (Edit)
-                	{
-                		<td>
-                			<button class="btn btn-primary"
-                			        @onclick="(() => ChoseToEdit(ts))">
-                				<i class="oi oi-pencil"></i>
-                			</button>
-                		</td>
-                	}
+				{
+					<td class="text-center">
+						
+						<i class="bi bi-pen-fill text-warning icon-responsive" style="font-size: 2rem;" @onclick="() => ChoseToEdit(ts)" ></i>
+                        					
+					</td>
+					
+				}
 				@if (Delete)
-                	{
-                		<td>
-                			<button class="btn btn-primary"
-                			        @onclick="(() => ChoseToDelete(ts))">
-                				<i class="oi oi-pencil"></i>
-                			</button>
-                		</td>
-                	}
+				{
+					<td class="text-center">
+						
+						<i class="bi bi-trash3-fill text-danger icon-responsive" style="font-size: 2rem;" @onclick="() => ChoseToDelete(ts)" ></i>
+					</td>
+				}
 			</tr>
 		}
-	</tbody>
-</table>
+		</tbody>
+	</table>
+</div>
+</div>
 
 
 

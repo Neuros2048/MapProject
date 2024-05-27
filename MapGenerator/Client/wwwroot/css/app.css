@@ -42,7 +42,9 @@ a, .btn-link {
     justify-content: center;
 }
 
-
+.text-green{
+    color: green!important;
+}
 .image-grid {
     display: flex;
     flex-wrap: wrap;
@@ -62,7 +64,19 @@ a, .btn-link {
     opacity: 0;
 }
 
+.icon-responsive {
+    cursor: pointer!important;
+    transition: color 0.3s, transform 0.2s!important;
+}
 
+.icon-responsive:hover {
+    color: darkred!important;
+    transform: scale(1.1)!important;
+}
+
+.icon-responsive:active {
+    transform: scale(1.05)!important;
+}
 .text-font{
     color: black;
     
@@ -79,15 +93,35 @@ a, .btn-link {
     display: block; /* Ensure images don't have extra whitespace */
 }
 .rotated-90 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transform: rotate(90deg);
+    transform-origin: center;
 }
 .rotated-180 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform-origin: center;
     transform: rotate(180deg); /* Rotate the image by 45 degrees */
 }
+.rotated-270 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform-origin: center;
+    transform: rotate(270deg);
+}
 
-.fix-size{
+
+.fix-size-100{
     width: 100px;
     height: 100px;
+}
+.fix-size-50{
+    width: 50px;
+    height: 50px;
 }
 
 

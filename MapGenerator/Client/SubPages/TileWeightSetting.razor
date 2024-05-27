@@ -6,47 +6,58 @@
 {
 	<img id="tileidurl_@Map.TileWeightDtos[@i].TileId" width="10" height="10" style="display:none" src="@MapS.TilesUrl[Map.TileWeightDtos[@i].TileId].Url" />
 }
-<button type="submit" class="btn btn-primary" onclick="@GenerateMap">Wygeneruj mape</button>
-<table class="table">
-	<thead>
-	<tr>
-		<th>Image</th>
-		<th>waga</th>
-		<th>Zwiększ wage</th>
-		<th>Zmiejsz wage wage</th>
-	</tr>
-	</thead>
-	<tbody>
-	@for (int i = 0; i < Map.TileWeightDtos.Count; i++)
-	{
-		
+
+<div class="card bg-nice-black text-white" style="border-radius: 1rem; width: 40rem">
+<div class="card-body p-5 ">
+	<button type="submit" class="btn btn-primary" onclick="@GenerateMap">Wygeneruj mape</button>
+	<button type="submit" class="btn btn-primary" onclick="@SaveMap">Zapisz mape</button>
+</div>
+</div>
+<div style="height: 10px"></div>
+<div class="card bg-nice-black text-white" style="border-radius: 1rem; width: 40rem">
+<div class="card-body p-5 ">
+	<table class="table table-striped table-bordered table-hover table-dark">
+    		<thead class="table-dark">
 		<tr>
-			@{
-				var currI = i;
-			}
-			<td> <img class="fix-size" src="@MapS.TilesUrl[Map.TileWeightDtos[currI].TileId].Url" @onclick="@(() => ChosenTile(Map.TileWeightDtos[currI].TileId))" alt=""/> </td>
-			<td>			
-				<div> @Map.TileWeightDtos[currI].Weight</div>
-
-			</td>
-			<td>
-
-				<button class="btn btn-primary"
-				        @onclick="(() => IncreaseWeight(currI))"> +
-					<i class="oi oi-pencil"></i>
-				</button>
-			</td>
-			<td>
-				<button class="btn btn-primary"
-				        @onclick="(() => DecreaseWeight(currI))"> -
-					<i class="oi oi-pencil"></i>
-				</button>
-			</td>
+			<th scope="col" class="col-1 text-center">Image</th>
+			<th scope="col" class="col-1 text-center">waga</th>
+			<th scope="col" class="col-1 text-center">Zwiększ wage</th>
+			<th scope="col" class="col-1 text-center">Zmiejsz wage</th>
 		</tr>
-	}
-	</tbody>
-</table>
-<button type="submit" class="btn btn-primary" onclick="@SaveMap">Zapisz mape</button>
+		</thead>
+		<tbody>
+		@for (int i = 0; i < Map.TileWeightDtos.Count; i++)
+		{
+		
+			<tr>
+				@{
+					var currI = i;
+				}
+				<td class="text-center  align-middle"> <img class="fix-size-50" src="@MapS.TilesUrl[Map.TileWeightDtos[currI].TileId].Url" @onclick="@(() => ChosenTile(Map.TileWeightDtos[currI].TileId))" alt=""/> </td>
+				<td class="text-center align-middle">			
+					<div style="font-size: 2rem;"> @Map.TileWeightDtos[currI].Weight</div>
+
+				</td>
+				<td class="text-center align-middle">
+
+					<button class="btn btn-primary"
+					        @onclick="(() => IncreaseWeight(currI))"> +
+						<i class="oi oi-pencil"></i>
+					</button>
+				</td>
+				<td class="text-center align-middle">
+					<button class="btn btn-primary"
+					        @onclick="(() => DecreaseWeight(currI))"> -
+						<i class="oi oi-pencil"></i>
+					</button>
+				</td>
+			</tr>
+		}
+		</tbody>
+	</table>
+</div>
+</div>
+
 @code {
 	
 	[Parameter] public GeneratedMapDto Map { get; set; } = new GeneratedMapDto();

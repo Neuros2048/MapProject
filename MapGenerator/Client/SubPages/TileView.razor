@@ -6,111 +6,168 @@
 @inject ILocalStorageService LocalStorageService
 
 	
-<div class="input-group">
-	<div class="custom-file">
-		<InputFile class="custom-file-input" multiple OnChange="OnChange" accept="image/png, image/jpeg, image/gif" id="inputFile"/>
-		<label class="custom-file-label" for="inputFile">Dodaj grafike pola</label>
+
+<div class="d-flex justify-content-evenly">
+	<div class="d-flex flex-column">
+		
+		<div class="card bg-nice-black text-white" style="border-radius: 1rem; width: auto">
+			<div class="card-body p-5 ">
+				<div class="input-group">
+					<div class="custom-file">
+						<InputFile class="custom-file-input" multiple OnChange="OnChange" accept="image/png, image/jpeg, image/gif" id="inputFile"/>
+						
+					</div>
+				</div>
+
+				@if (imageToProces.Any())
+				{
+					<EditForm Model="creatTile" OnSubmit="CreateTile">
+					<div class="d-flex flex-column justify-content-center ">
+						<div class="text-center">
+							<div>
+                            									
+                            									<InputText id="p1" @bind-Value="creatTile.P1" class="from-control"/>
+                            								</div>
+								<div class="text-center">  @creatTile.P1</div>
+							<div class="d-flex justify-content-center  align-items-center ">
+								<div class=" p-1">
+								
+									<InputText id="p2" @bind-Value="creatTile.P2" class="from-control"/>
+								</div>
+								<div class="rotated-270 p-1">  @creatTile.P2</div>
+								<img class="fix-size-100 text-center p-1" src="@imageToProces.First()" alt=""/>
+									<div class="rotated-90 p-1">  @creatTile.P0</div>
+								<div class="p-1">
+						
+									<InputText id="p0" @bind-Value="creatTile.P0" class="from-control"/>
+								</div>
+							</div>
+								<div class="text-center">  @creatTile.P3</div>
+							<div>
+                            									
+                            	<InputText id="p3" @bind-Value="creatTile.P3" class="from-control"/>
+                            </div>
+							
+							<div>
+                            	
+                            	<InputSelect id="sym" @bind-Value="creatTile.TileSetId">
+                            		<option value=0>Bez obrotu</option>
+                            		<option value=1>obrut 90 stopni</option>
+                            		<option value=2>4 obroty</option>
+                            	</InputSelect>
+                            </div>
+						</div>
+					</div>
+						
+
+						
+							
+								
+								
+								
+
+								<div class="d-flex justify-content-center">
+                                	<button type="submit" class="btn btn-primary  w-100 my-4 mb-2">Confirm</button>
+                                	<div style="width: 5px	"></div>
+                                <button type="button" class="btn btn-danger  w-100 my-4 mb-2" onclick="@RemoveImage">Anuluj</button>
+                                </div>
+								
+
+							</EditForm>
+
+
+							}
+						</div>
+		</div>
+
+		<div style="height: 10px"></div>
+				@if (Edit)
+				{
+				
+					<div class="card bg-nice-black text-white" style="border-radius: 1rem; width: auto">
+						<div class="card-body p-5 ">
+							
+							<EditForm Model="editTile" OnSubmit="SubmitEdit">
+								
+								<div class="d-flex flex-column justify-content-center ">
+										<div class="text-center">
+                                    									
+                                    									<InputText id="p1" @bind-Value="editTile.P1" class="from-control"/>
+                                    								</div>
+									<div class="text-center"> @editTile.P1</div>
+									<div class="d-flex justify-content-center  align-items-center">
+										<div class="align-middle ">
+                                        									
+                                        									<InputText id="p2" @bind-Value="editTile.P2" class="from-control"/>
+                                        								</div>
+										<div class=" rotated-270"> @editTile.P2</div>
+										<img class="fix-size-100 " src="@MapS.TilesUrl[editTile.Id].Url" alt=""/>
+										<div class="rotated-90"> @editTile.P0</div>
+										<div class="align-middle">
+											<InputText id="p0" @bind-Value="editTile.P0" class="from-control"/>
+										</div>
+									</div>
+									<div class="text-center"> @editTile.P3</div>
+									<div class="text-center">
+                                    								
+                                    	<InputText id="p3" @bind-Value="editTile.P3" class="from-control"/>
+                                    </div>
+								</div>
+								
+							
+								
+								
+								<div class="d-flex justify-content-center">
+									<button type="submit" class="btn btn-primary  w-100 my-4 mb-2">Confirm</button>
+									<div style="width: 5px	"></div>
+								<button type="button" class="btn btn-danger  w-100 my-4 mb-2" onclick="@Anuluj">Anuluj</button>
+								</div>
+							</EditForm>
+
+						</div>
+					</div>
+				}
+		
 	</div>
+	<div class="card bg-nice-black text-white" style="border-radius: 1rem; width: 18rem">
+		<div class="card-body p-5 ">
+			@if (tiles.Any())
+			{
+				<table class="table  table-bordered table-hover table-dark">
+                		<thead class="table-dark">
+					<tr>
+						<th scope="col"  class="col-3 text-center">Image</th>
+						<th scope="col"  class="col-1 text-center">Edytuj</th>
+						<th scope="col"  class="col-1 text-center">Usuń</th>
+					</tr>
+					</thead>
+					<tbody>
+					@foreach (var t in tiles)
+					{
+						<tr>
+							<td class="text-center align-middle table-primary "> <img class="fix-size-50" src="@MapS.TilesUrl[t.Id].Url" alt=""/> </td>
+							
+							<td class="text-center ">
+                            						
+                            	<i class="bi bi-pen-fill text-warning icon-responsive" style="font-size: 2rem;" @onclick="() => EditTile(t)" ></i>
+                                                    
+                            </td>
+							<td class="text-center">
+                            						
+                            	<i class="bi bi-trash3-fill text-danger icon-responsive" style="font-size: 2rem;" @onclick="() => DeleteTile(t.Id)" ></i>
+                            </td>
+							
+						</tr>
+					}
+					</tbody>
+				</table>
+			}
+		</div>
+		</div>
 </div>
 
-@if (imageToProces.Any())
-{
-	<img class="fix-size" src="@imageToProces.First()" alt=""/>
-	<EditForm Model="creatTile" OnSubmit="CreateTile">
-		<div>
-			<label for="p0">left</label>
-			<InputText id="p0" @bind-Value="creatTile.P0" class="from-control" />
-		</div>
-		<div>
-			<label for="p1">Up</label>
-			<InputText id="p1" @bind-Value="creatTile.P1" class="from-control" />
-		</div>
-		<div>
-			<label for="p2">Right</label>
-			<InputText id="p2" @bind-Value="creatTile.P2" class="from-control" />
-		</div>
-		<div>
-			<label for="p3">Down</label>
-			<InputText id="p3" @bind-Value="creatTile.P3" class="from-control" />
-		</div>
-	
-		<div>
-			<label for="sym">Symmetry</label>
-			<InputSelect id="sym" @bind-Value="creatTile.TileSetId">
-				<option value=0 >Bez obrotu</option>
-				<option value=1 >obrut 90 stopni</option>
-				<option value=2 >4 obroty</option>
-			</InputSelect>
-		</div>
-		<button type="submit" class="btn btn-primary">Confirm</button>
-	
-	</EditForm>
-	
-	
-}
 
 
-@if (Edit)
-{
-	<img class="fix-size" src="@MapS.TilesUrl[editTile.Id].Url" alt=""/>
-	<EditForm Model="editTile" OnSubmit="SubmitEdit">
-		<div>
-			<label for="p0">left</label>
-			<InputText id="p0" @bind-Value="editTile.P0" class="from-control" />
-		</div>
-		<div>
-			<label for="p1">Up</label>
-			<InputText id="p1" @bind-Value="editTile.P1" class="from-control" />
-		</div>
-		<div>
-			<label for="p2">Right</label>
-			<InputText id="p2" @bind-Value="editTile.P2" class="from-control" />
-		</div>
-		<div>
-			<label for="p3">Down</label>
-			<InputText id="p3" @bind-Value="editTile.P3" class="from-control" />
-		</div>
-		
-		<button type="submit" class="btn btn-primary">Confirm</button>
-		<button type="button" class="btn btn-danger" onclick="@Anuluj">Anuluj</button>
-	
-	</EditForm>
-	
-	
-}
-
-@if (tiles.Any())
-{
-	<table class="table">
-		<thead>
-		<tr>
-			<th>Image</th>
-			<th>Edytuj</th>
-			<th>Usuń</th>
-		</tr>
-		</thead>
-		<tbody>
-		@foreach (var t in tiles)
-		{
-			<tr>
-				<td> <img src="@MapS.TilesUrl[t.Id].Url" alt=""/> </td>
-				<td>
-					<button class="btn btn-primary"
-					        @onclick="() => EditTile(t)">
-						<i class="oi oi-pencil"></i>
-					</button>
-				</td>
-				<td>
-                    <button class="btn btn-primary"
-                                @onclick="(() => DeleteTile(t.Id))">
-                        <i class="oi oi-pencil"></i>
-                    </button>
-                </td>
-			</tr>
-		}
-		</tbody>
-	</table>
-}
 
 
 @code {
@@ -212,6 +269,10 @@
 	    Change!.Invoke();
     }
 
+	private void RemoveImage()
+	{
+		imageToProces.RemoveAt(0);
+	}
 
 	private void EditTile(TileDto tileDto)
 	{

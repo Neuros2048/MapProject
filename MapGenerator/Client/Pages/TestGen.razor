@@ -3,7 +3,7 @@
 @using Shared.DTO
 
 @using Client.SubPages
-<h3>MapGenerator</h3>
+
 @inject MapService MapS
 
 @inject ILocalStorageService LocalStorageService
@@ -12,25 +12,29 @@
 
 
 <TileSetTable Look="true" Edit="false" Delete="false" LookTileSet="@SetCurrSet" ></TileSetTable>
+<div style="height: 10px"></div>
 @if (CurrSetDto.Id != 0)
 {
-	<EditForm Model="Map" OnSubmit="PrepareMap">
-		<div>
-			<label for="name">Nazwa</label>
-			<InputText id="name" @bind-Value="Map.Name" class="from-control" />
-		</div>
-		<div>
-			<label for="N">Wysokość</label>
-			<InputNumber id="N" @bind-Value="Map.N" class="from-control" />
-		</div>
-		<div>
-			<label for="M">Szerkość</label>
-			<InputNumber id="M" @bind-Value="Map.M" class="from-control" />
-		</div>
+	<div class="card bg-nice-black text-white" style="border-radius: 1rem; width: 40rem">
+	<div class="card-body p-5 ">
+		<EditForm Model="Map" OnSubmit="PrepareMap">
+			<div>
+				<label for="name">Nazwa</label>
+				<InputText id="name" @bind-Value="Map.Name" class="from-control" />
+			</div>
+			<div>
+				<label for="N">Wysokość</label>
+				<InputNumber id="N" @bind-Value="Map.N" class="from-control" />
+			</div>
+			<div>
+				<label for="M">Szerkość</label>
+				<InputNumber id="M" @bind-Value="Map.M" class="from-control" />
+			</div>
 		
-		<button type="submit" class="btn btn-primary">Potwierdz</button>
-	</EditForm>
-	
+			<button type="submit" class="btn btn-primary">Potwierdz</button>
+		</EditForm>
+	</div>
+	</div>
 	
 	<CanvasPage @ref="_context" OnMouseClick="OnMouseClick"> </CanvasPage>
 	
