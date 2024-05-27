@@ -11,6 +11,13 @@ a, .btn-link {
     color: #0071c1;
 }
 
+.bg-nice-black{
+    background-color: rgba(0,0,0,.75)!important;
+}
+
+.icon-large {
+    font-size: 1.5rem; 
+}
 
 .loader {
     border: 16px solid #f3f3f3; /* Light grey */

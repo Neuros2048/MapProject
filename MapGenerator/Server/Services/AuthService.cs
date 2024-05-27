@@ -21,7 +21,8 @@ public class AuthService(DataContext context, IConfiguration configuration)
 
     public async Task<HandlerResult<Success,IErrorResult>> Register(RegisterDto registerDto)
     {
-        var email = await context.Users.FirstOrDefaultAsync(x => x.Email.Equals(registerDto));
+        var email = await context.Users.FirstOrDefaultAsync(x => x.Email.Equals(registerDto.Email));
+        
         if (email != null) return new IncorrectData();
         User user = UserMapper.RegisterToUser(registerDto, workFacktor);
         await context.Users.AddAsync(user);

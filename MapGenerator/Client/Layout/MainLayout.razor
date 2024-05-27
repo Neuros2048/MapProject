@@ -4,22 +4,74 @@
 @inject NavigationManager NavigationManager
 <div class="page">
     
-    <div class="sidebar">
-        <NavMenu/>
-    </div>
+   
 
     <main>
         
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            
+           
             <AuthorizeView>
                 <Authorized>
-                     <div class="container-fluid d-flex justify-content-end">
+                    
+                    <div class="container-fluid d-flex justify-content-start">
+                                                      
+                        <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                          <span class="bi bi-back" style="font-size: 1.5rem;" ></span> 
+                        </NavLink>
+                        <ul class="navbar-nav">
+                            <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Mapy Kafefelkowe
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink">
+                                <div class="nav-item px-3">
+                                    <NavLink class="nav-link" href="MapManager">
+                                        <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> MapManager
+                                    </NavLink>
+                                </div>
+                                <div class="nav-item px-3">
+                                    <NavLink class="nav-link" href="Testgen">
+                                        <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> MapGenerator
+                                    </NavLink>
+                                </div>
+                                <div class="nav-item px-3">
+                                    <NavLink class="nav-link" href="SavedMaps">
+                                        <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> SavedMaps
+                                    </NavLink>
+                                </div>
+                            </ul>
+                            </li>
+                        </ul>
+                      
+                        <ul class="navbar-nav">
+                            <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                              Mapy plamowe
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink">
+                                 <div class="nav-item px-3">
+                                    <NavLink class="nav-link" href="PolygonMap">
+                                        <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> PolygonMapGenerator
+                                    </NavLink>
+                                </div>  
+                            </ul>
+                            </li>
+                        </ul>
+                    </div>
+                  
+                                
+                                
+                    
+                    
+                    
+                    <div class="container-fluid d-flex justify-content-end">
                         <!-- Move dropdown menu to the right -->
                         <div class="navbar-collapse d-flex justify-content-end" id="navbarNavDarkDropdown">
                             <ul class="navbar-nav">
                                 <li class="nav-item dropstart">
                                     <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        @context.User.Identity?.Name!
+                                        @context.User.Identity?.Name
                                     </a>
                                     <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink">
                                         <NavLink class="nav-link" href="changepassword">
@@ -35,7 +87,12 @@
                     </div>
                 </Authorized>
                 <NotAuthorized>
-                    
+                     <div class="container-fluid d-flex justify-content-start">
+                                                                              
+                         <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                             <span class="bi bi-back" style="font-size: 1.5rem;" ></span> 
+                         </NavLink>
+                     </div>
                     <div class="container-fluid d-flex justify-content-end">
                         <NavLink class="nav-link" href="Login">
                             <span class="oi oi-list-rich" aria-hidden="true"></span> Zaloguj

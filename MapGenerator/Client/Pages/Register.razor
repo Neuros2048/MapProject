@@ -9,8 +9,62 @@
 @inject NavigationManager NavigationManager
 
 
+
+<section class="vh-100">
+  <div class="container py-5 h-100">
+    <div class="row d-flex align-items-center justify-content-center h-100">
+        
+        <div class="card bg-nice-black text-white" style="border-radius: 1rem;">
+            <div class="card-body p-5 ">
+                <EditForm Model="RegisterDto" OnValidSubmit="HandleRegister">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+                    <div class="mb-4 ">
+                        <InputText @bind-Value="RegisterDto.Email" id="email"  placeholder="e-mail" class="form-control"></InputText>
+                    </div>
+                    <div class="mb-4 ">
+                    <InputText @bind-Value="RegisterDto.Username" id="username" placeholder="Nazwa Urzytkownika" class="form-control"></InputText>
+                    </div>
+                    <div class="mb-4 ">
+                    <InputText @bind-Value="RegisterDto.Password" id="password" placeholder="Hasło" type="password" class="form-control"></InputText>
+                    </div>
+                    <div class="mb-4 ">
+                        <InputText @bind-Value="RegisterDto.ConfirmPassword" id="confirmpassword"  placeholder="Podtwierdz hasło" type="password" class="form-control"></InputText>
+                    </div>
+                    <div class="text-center d-flex justify-content-center align-items-center"> 
+                                                @if (logging)
+                                                {
+                                                    <div class="loader"></div>
+                                                }
+                                                @if (!string.IsNullOrEmpty(message))
+                                                {
+                                                    
+                                                    <div class="card  bg bg-danger flex-fill bg-opacity-50 text-white d-flex flex-row align-items-center justify-content-center" style="border-radius: 1rem;">
+                                                       
+                                                      
+                                                        <p class="mb-0">@message</p>
+                                                       <div  style="width:10px"></div>
+                                                       <a class="bi bi-x " onclick="@ResetMassage" style="font-size: 24px;"></a>
+                                                   
+                                                    </div>
+                                                }
+                                                </div>
+                        <button type="submit" class="btn btn-primary w-100 my-4 mb-2" >Zarejestru się</button>
+                
+                    </EditForm>    
+                
+                
+      
+            </div>
+        </div>
+        
+    </div>
+  </div>
+</section>
+
+
 <div>
-    <EditForm Model="RegisterDto" OnValidSubmit="HandleLogin">
+    <EditForm Model="RegisterDto" OnValidSubmit="HandleRegister">
         <DataAnnotationsValidator />
         <ValidationSummary />
         <p>Login:</p>
@@ -42,7 +96,7 @@
     private string message = string.Empty;
     private bool logging = false;
 
-    private async Task HandleLogin()
+    private async Task HandleRegister()
     {
         logging = true;
         message = string.Empty;
@@ -58,6 +112,10 @@
             logging = false;
             message = "Rejestracja zakończona niepowodzeniem";
         }
+    }
+    private void ResetMassage()
+    {
+        message = string.Empty;
     }
 
 
