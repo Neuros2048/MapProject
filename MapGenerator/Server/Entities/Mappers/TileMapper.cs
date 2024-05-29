@@ -32,4 +32,18 @@ public static class TileMapper
             TileSetId = tile.TileSetId
         };
     }
+
+    public static Tile TileToNewTile(Tile tile)
+    {
+        return new Tile
+        {
+            Id = 0,
+            P0 = tile.P0,
+            P1 = tile.P1,
+            P2 = tile.P2,
+            P3 = tile.P3,
+            TileSetId = 0,
+            Stream = tile.Stream,
+        };
+    }
 }

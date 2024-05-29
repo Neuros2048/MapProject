@@ -12,24 +12,7 @@ namespace Server.Controllers;
 public class MapController(TileService tileService) : ControllerBase
 {
     
-    
-    [HttpPost("Add")]
-    public async Task<IActionResult> Add(TileDto tileDto)
-    {
-        
-        return Ok(tileDto);
    
-    }
-
-    private string slowa = "niewim";
-
-
-    [HttpGet("get")]
-    public async Task<IActionResult> get()
-    {
-        return Ok(slowa);
-   
-    }
     
     [HttpGet("get2")]
     public async Task<IActionResult> get2()
@@ -148,6 +131,14 @@ public class MapController(TileService tileService) : ControllerBase
     public async Task<IActionResult> GetBaseTile()
     {
         return (await tileService.GetBaseTile()).Match(Ok, this.ErrorResult); 
+    }
+    
+    [HttpGet("CopyTileSet"),Authorize]
+    public async Task<IActionResult> CopyTileSet(long tileId)
+    {
+        var idString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = idString == null ? 0 : long.Parse(idString);
+        return (await tileService.CopyTileSet(tileId,userId) ).Match(Ok, this.ErrorResult);
     }
   
     

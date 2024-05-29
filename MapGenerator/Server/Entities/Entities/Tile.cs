@@ -9,7 +9,6 @@ public class Tile
     public string? P1 { get; set; }
     public string? P2 { get; set; }
     public string? P3 { get; set; }
-    public TileSymmetry Symmetry { get; set; }
     public TileSet? TileSet { get; set; }
     public long TileSetId { get; set; }
     public byte[]? Stream { get; set; }

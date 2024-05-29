@@ -22,4 +22,19 @@ public static class TileSetMapper
             UserId = userId
         };
     }
+
+    public static TileSet TileSetToNewTileSet(TileSet tileSet, long userId)
+    {
+        var set = new TileSet();
+        set.Name = tileSet.Name;
+        set.UserId = userId;
+        set.Tiles = new List<Tile>();
+        foreach (var t in tileSet.Tiles)
+        {
+            set.Tiles.Add( TileMapper.TileToNewTile(t));
+        }
+
+
+        return set;
+    }
 }

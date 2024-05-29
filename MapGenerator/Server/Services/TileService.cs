@@ -92,6 +92,7 @@ public class TileService(DataContext dataContext)
       result.P1 = tileDto.P1;
       result.P2 = tileDto.P2;
       result.P3 = tileDto.P3;
+      await dataContext.SaveChangesAsync();
       return new Success();
    }
 
@@ -180,11 +181,25 @@ public class TileService(DataContext dataContext)
    
    public async Task<HandlerResult<SuccessData<TileDto>, IErrorResult>> GetBaseTile()
    {
-      Tile tile = await dataContext.Tiles.FindAsync((long)1);
+      Tile tile = (await dataContext.Tiles.FindAsync((long)1))!;
       return new SuccessData<TileDto>()
       {
          Data = TileMapper.TileToDto(tile)
       };
+   }
+   
+   public async Task<HandlerResult<Success, IErrorResult>> CopyTileSet(long tileId, long userId)
+   {
+      
+      if (tileId >=2  && tileId <= 3)
+      {
+         var res = await dataContext.TileSets.Where(x => x.Id == tileId).Include(x=>x.Tiles).FirstOrDefaultAsync();
+         await dataContext.TileSets.AddAsync(TileSetMapper.TileSetToNewTileSet(res,userId));
+         await dataContext.SaveChangesAsync();
+         return new Success();
+      }
+
+      return new ErrorResult();
    }
    
 }

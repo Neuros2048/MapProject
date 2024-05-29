@@ -3,24 +3,34 @@
 @using Shared.DTO
 @using Client.SubPages
 
-<h3>MapGenerator</h3>
+@implements IDisposable;
 @inject MapService MapS
 @inject IJSRuntime Js
 @inject ILocalStorageService LocalStorageService
 
+<div class="d-flex justify-content-evenly">
 
-<TileSetTable Look="true"  LookTileSet="@SetCurrSet" ></TileSetTable>
-<SaveMapTable @ref="_saveMapTable" ChosenMap="MakeMap"> </SaveMapTable>
-
+	<div class="d-flex flex-column">
+	<TileSetTable Look="true"  LookTileSet="@SetCurrSet" ></TileSetTable>
+	<div style="height: 10px"></div>
+	<SaveMapTable @ref="_saveMapTable" ChosenMap="MakeMap"> </SaveMapTable>
+	</div>
+	<div style="width: 10px;"></div>
 @if (ok)
 {	
 	@for (int i = 0; i <  Map.TileWeightDtos.Count; i++)
 	{
 		<img id="tileidurl_@Map.TileWeightDtos[@i].TileId" width="10" height="10" style="display:none" src="@MapS.TilesUrl[Map.TileWeightDtos[@i].TileId].Url" />
 	}
-	<CanvasPage @ref="_context"> </CanvasPage>
+	<div class="d-flex flex-column">
+		<CanvasPage @ref="_context"> </CanvasPage>
+	</div>
+	
+	<TileMapSolver @ref="_tileMapSolver" Map="@Map" TileToSet="SetTile"> </TileMapSolver>
+	
 }
-<TileMapSolver @ref="_tileMapSolver" Map="@Map" TileToSet="SetTile"> </TileMapSolver>
+</div>
+
 @code {
 	private readonly string tileKey = "tile_";
 	private List<TileSetDto> _tileSetDtos = new List<TileSetDto>();
@@ -30,7 +40,7 @@
     protected override async void OnInitialized()
     {
 	   
-	    _tileSetDtos = await MapS.TileSets();
+	    _tileSetDtos = await MapS.GetTileSets();
 	    this.StateHasChanged();
     }
     private TileSetDto CurrSetDto = new TileSetDto();
@@ -43,30 +53,45 @@
     }
 	
     private GeneratedMapDto Map = new GeneratedMapDto();
-    bool ok = false;
+    private bool ok = false;
 
     private async void MakeMap(GeneratedMapDto generatedMapDto)
     {
 	    ok = false;
+	    await Task.Delay(1);
+	    this.StateHasChanged();
+	    await Task.Delay(1);
 	    Map = await MapS.GetMap(generatedMapDto.Id);
-	    
 	    ok = true;
 	    this.StateHasChanged();
+	    await Task.Delay(1);
 	    await PrepareMap();
+	   
 	    await Task.Delay(1);
 	    //await SetSettedTiles();
 	    await _tileMapSolver.SetedTiles();
 	    await _tileMapSolver.GenerateMap();
     }
     private async void SetTile(SetTileDto setTileDto)
-    { 
-	    
-	    await _context.SetTile(setTileDto.M, setTileDto.N, setTileDto.TileId,10);    
-    }
-		
-    protected async Task PrepareMap()
     {
+	    
+	    if (ok) await _context.SetTile(setTileDto.M, setTileDto.N, setTileDto.TileId, 10);
+	    
+    }
+
+    private async Task PrepareMap()
+    {
+	    
 	    await _context.Resize(Map.M * 10 , Map.N * 10);
 	    
+	    this.StateHasChanged();
+	    await Task.Delay(1);
+
     }
+    
+    public void Dispose()
+    {
+	    ok = false;
+    }
+    
 }

@@ -6,8 +6,7 @@
 @inject IJSRuntime Js
 @inject ILocalStorageService LocalStorageService
 
-
-<h3>MapManager</h3>
+<button @onclick="CopyBaseSet" class="btn btn-danger w-100 my-4 mb-2 ">Copt</button>
 <div class="  text-white d-flex flex-row align-items-center justify-content-center" >
 	<div class="card bg-nice-black text-white" style="border-radius: 1rem; width: 18rem">
 		<div class="card-body p-5 ">
@@ -77,13 +76,13 @@
     private async void DeleteCurrSet(TileSetDto tile)
     {
 	    await MapS.DeleteTileSet(tile.Id);
-	    _tileSetDtos =  await MapS.TileSets();
+	    _tileSetDtos =  await MapS.GetTileSets();
 	    sets = true;
 	    this.StateHasChanged();
     }
     protected override async void OnInitialized()
     {
-	    _tileSetDtos =  await MapS.TileSets();
+	    _tileSetDtos =  await MapS.GetTileSets();
 	    sets = true;
 	    this.StateHasChanged();
     }
@@ -93,6 +92,11 @@
 	    await MapS.GetTilesToHash(CurrSetDto.Id);
 	    tiles = await MapS.GetTiles(CurrSetDto.Id);
 	  
+    }
+
+    private async void CopyBaseSet()
+    {
+	     await MapS.CopyTileSet(3);
     }
     
    

@@ -3,9 +3,12 @@
 @inject IJSRuntime Js
 @using Excubo.Blazor.Canvas
 
-
-<div @ref="_container" class="graphicFiled">
-    <Canvas id="canvasId"  width="800" height="800" @ref="_context" @onclick="canOn" style="border: 1px solid black"></Canvas> </div>
+<div class="card bg-nice-black text-white" style="border-radius: 1rem; width: auto;">
+    <div class="card-body p-5 ">
+        <div @ref="_container" class="graphicFiled">
+            <Canvas id="canvasId"  width="800" height="800" @ref="_context" @onclick="canOn" style="border: 1px solid black"></Canvas> </div>
+    </div>
+</div>
 
 @code {
     private ElementReference _container;
@@ -42,7 +45,7 @@
      
          pos.X = (int) Math.Round(e.ClientX- p.Left);
          pos.Y = (int) Math.Round(e.ClientY- p.Top);
-        Console.WriteLine($"{pos.X}  {pos.Y}");
+        
         OnMouseClick?.Invoke(pos);
     }
 
@@ -60,4 +63,5 @@
     {
         await Js.InvokeVoidAsync("resizeCanvas", "canvasId", wight,height);
     }
+    
 }

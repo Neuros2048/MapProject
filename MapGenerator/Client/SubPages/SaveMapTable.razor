@@ -5,30 +5,32 @@
 @inject IJSRuntime Js
 @if (_chosen)
 {
-	<table class="table">
-		<thead>
-		<tr>
-			<th>Nazwa Mapy</th>
-			<th>Zobacz</th>
-		</tr>
-		</thead>
-		<tbody>
-		@foreach (var tm in _generatedMap)
-		{
+	<div class="card bg-nice-black text-white" style="border-radius: 1rem; width: 40rem">
+	<div class="card-body p-5 ">
+		<table class="table table-striped table-bordered table-hover table-dark">
+        		<thead class="table-dark">
 			<tr>
-				<td>
-					<div>@tm.Name</div> </td>
-				<td>
-					<button class="btn btn-primary"
-					        @onclick="(() => SetMap(tm))">
-						<i class="oi oi-pencil"></i>
-					</button>
-				</td>
+				<th scope="col"  class="col-3 text-center">Nazwy Map</th>
+				<th scope="col"  class="col-1 text-center">Zobacz</th>
 			</tr>
-		}
+			</thead>
+			<tbody>
+			@foreach (var tm in _generatedMap)
+			{
+				<tr>
+					<td class="text-center">
+						<div>@tm.Name</div> </td>
+					<td class="text-center">
+                    						
+                    	<i class="bi bi-eye-fill text-green icon-responsive" style="font-size: 2rem;" @onclick="() =>SetMap(tm)"></i>
+                    </td>
+					
+				</tr>
+			}
 		</tbody>
-	</table>
-
+		</table>
+		</div>
+	</div>
 }
 
 @code {
@@ -51,5 +53,7 @@
 	{
 		ChosenMap?.Invoke(generatedMapDto);
 	}
+	
+	
 
 }

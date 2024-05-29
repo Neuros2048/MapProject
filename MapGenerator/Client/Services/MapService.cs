@@ -24,36 +24,15 @@ public class MapService
     public Dictionary<long,TileDto> TilesUrl = new Dictionary<long, TileDto>(); 
 
     public List<TileSetDto> TileSetDtos = new List<TileSetDto>();
-    public async Task<byte[]> SendImageToServer(string url)
-    {
-        
-        var response = await _http.GetAsync(url);
-        byte[] imageData = await response.Content.ReadAsByteArrayAsync();
-        Console.WriteLine(Convert.ToBase64String(imageData));
-        TileDto tileDto = new TileDto()
-        {
-            Id = 0,
-            Image = imageData
-        };
-        var r1 = await _http.GetAsync("api/Map/get");
-        Console.WriteLine(r1.IsSuccessStatusCode);
-        
-        var result = await _http.PostAsJsonAsync("api/Map/Add/",tileDto );
-        Console.WriteLine("a");
-        Console.WriteLine(result.IsSuccessStatusCode);
-        var r2 = await result.Content.ReadFromJsonAsync<TileDto>();
-        Console.WriteLine(r2.Image);
-        byte[] fileBytes = r2.Image;
-        return fileBytes;
-    }
+  
     
-    public async Task<List<TileSetDto>> TileSets()
+    public async Task<List<TileSetDto>> GetTileSets()
     {
         var res = await _http.GetAsync(_controllerBase + "getTileSets");
         if (!res.IsSuccessStatusCode) return new List<TileSetDto>();
         return ((await res.Content.ReadFromJsonAsync<SuccessData<List<TileSetDto>>>())!).Data!;
     }
-    public async Task TileSets2()
+    public async Task TileSets()
     {
         var res = await _http.GetAsync(_controllerBase + "getTileSets");
         if (!res.IsSuccessStatusCode) return;
@@ -93,6 +72,13 @@ public class MapService
                 tileDto.Image = null;
                 tileDto.Url = url;
                 TilesUrl.Add(tileDto.Id, tileDto);
+            }
+            else
+            {
+                TilesUrl[tileDto.Id].P0 = tileDto.P0;
+                TilesUrl[tileDto.Id].P1 = tileDto.P1;
+                TilesUrl[tileDto.Id].P2 = tileDto.P2;
+                TilesUrl[tileDto.Id].P3 = tileDto.P3;
             }
             
         }
@@ -174,6 +160,15 @@ public class MapService
     public async Task<bool> UpDateTile(TileDto tileDto)
     {
         var res = await _http.PutAsJsonAsync(_controllerBase + "UpdateTile", tileDto);
+        if (res.IsSuccessStatusCode) return true;
+        return false;
+    }
+    
+    public async Task<bool> CopyTileSet(long tileSetId)
+    {
+        Console.WriteLine("hejs");
+        var res = await _http.GetAsync(_controllerBase + "CopyTileSet?tileId=" + tileSetId);
+        Console.WriteLine("huje "+res.IsSuccessStatusCode);
         if (res.IsSuccessStatusCode) return true;
         return false;
     }
