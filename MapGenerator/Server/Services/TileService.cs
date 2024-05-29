@@ -202,4 +202,13 @@ public class TileService(DataContext dataContext)
       return new ErrorResult();
    }
    
+   public async Task<HandlerResult<SuccessData<List<TileSetDto>>, IErrorResult>> GetBaseSets()
+   {
+      return new SuccessData<List<TileSetDto>>()
+      {
+         Data = await dataContext.TileSets.Where(x => x.UserId == 1&& x.Id > 1).Select(x => TileSetMapper.TileSetToDto(x))
+            .ToListAsync()
+      };
+   }
+   
 }

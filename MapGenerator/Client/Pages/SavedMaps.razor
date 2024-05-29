@@ -57,6 +57,11 @@
 
     private async void MakeMap(GeneratedMapDto generatedMapDto)
     {
+	    if (_tileMapSolver != null)
+	    {
+		    _tileMapSolver.Stop();
+	    }
+
 	    ok = false;
 	    await Task.Delay(1);
 	    this.StateHasChanged();
@@ -66,15 +71,17 @@
 	    this.StateHasChanged();
 	    await Task.Delay(1);
 	    await PrepareMap();
-	   
+
 	    await Task.Delay(1);
 	    //await SetSettedTiles();
 	    await _tileMapSolver.SetedTiles();
+
 	    await _tileMapSolver.GenerateMap();
+	    
     }
     private async void SetTile(SetTileDto setTileDto)
     {
-	    
+	   
 	    if (ok) await _context.SetTile(setTileDto.M, setTileDto.N, setTileDto.TileId, 10);
 	    
     }

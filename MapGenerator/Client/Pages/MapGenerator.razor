@@ -1,4 +1,4 @@
-﻿@page "/TestGen"
+﻿@page "/MapGenerator"
 @using Client.Services
 @using Shared.DTO
 
@@ -15,14 +15,15 @@
 	<div class="d-flex flex-column">
 	<TileSetTable Look="true" Edit="false" Delete="false" LookTileSet="@SetCurrSet" ></TileSetTable>
     <div style="height: 10px"></div>
-   @if (ok )
-       	{
-   		   
-       		<TileWeightSetting @ref="_tileWeightSetting"  Map="@Map" TileClick="TileClick" ></TileWeightSetting>
-       	}
-	</div>
-	<div style="width: 10px"></div>
+	@if (CurrSetDto.Id != 0 )
+           	{
+       		   
+           		<TileWeightSetting @ref="_tileWeightSetting"  Map="@Map" TileClick="TileClick" ></TileWeightSetting>
+           	}
+    	</div>
+    	<div style="width: 10px"></div>
 	@if (CurrSetDto.Id != 0) {
+		
 		<div class="d-flex flex-column">
 			<CanvasPage @ref="_context" OnMouseClick="OnMouseClick"> </CanvasPage>
 			</div>
@@ -63,7 +64,8 @@
 							    <InputNumber id="M" @bind-Value="Map.M" class="from-control"/>
 						    </div>
 						    <div style="height: 3px"></div>
-						    <button type="submit" class="btn btn-primary w-100 my-4 mb-2">Zmień Rozmiar</button>
+							 <button type="submit" class="btn btn-primary w-100 my-4 mb-2">Zmień Rozmiar</button>
+					     </EditForm>
 						    <div style="height: 3px"></div>
 						    <button type="submit" class="btn btn-primary w-100 my-4 mb-2" onclick="@GenerateMap">Wygeneruj mape</button>
 						    <div style="height: 3px"></div>
@@ -81,7 +83,7 @@
 							    <div style="height: 3px"></div>
 						    }
 						    <button type="submit" class="btn btn-primary w-100 my-4 mb-2" onclick="@SaveMap">Zapisz mape</button>
-					    </EditForm>
+					   
 
 				    </div>
 
@@ -89,8 +91,11 @@
 		    </div>
 	    }
     }
-	
-		<TileMapSolver @ref="_tileMapSolver" Map="@Map" TileToSet="SetTile"> </TileMapSolver>
+	@if (_canDraw)
+	{
+	<TileMapSolver @ref="_tileMapSolver" Map="@Map" TileToSet="SetTile"> </TileMapSolver>
+	}
+		
 	
 </div>
 
@@ -106,7 +111,8 @@
     private TileWeightSetting? _tileWeightSetting;
     private GeneratedMapDto Map = new GeneratedMapDto();
     private TileMapSolver? _tileMapSolver;
-    private bool ok = false;
+   // private bool ok = false;
+    private bool _mapIsGenereted = false;
     private bool _canDraw = true;
     private async void SetCurrSet(TileSetDto tileSetDto)
     {
@@ -126,15 +132,17 @@
     
     protected async Task PrepareMap()
     {
+	    await ResetStart();
 	    ResetMassage();
-	
+	    _mapIsGenereted = false;
 	    
-	    ok = true;
 	    Map.SetTileDtos = new List<SetTileDto>();
 	    this.StateHasChanged();
 	    await _context.Resize(Map.M * 10 , Map.N * 10);
-	    
-		
+	    await ResetEnd();
+	    await _context.Clear();
+
+
     }
 
     private long IdToset = 0;
@@ -153,7 +161,7 @@
     }
     private async void OnMouseClick(CanvasPage.Pos pos)
     {
-	    if (tileClicked)
+	    if (tileClicked && ! _mapIsGenereted)
 	    {
 
 
@@ -182,10 +190,18 @@
 
     private async void GenerateMap()
     {
-	    
+	    await ResetStart();
 	    ResetMassage();
 	    Map.seed = -1;
 	    await Task.Delay(1);
+	    await ResetEnd();
+	    if (_mapIsGenereted)
+	    {
+		    await _context.Clear();
+		    await _tileMapSolver.SetedTiles();
+	    }
+
+	    _mapIsGenereted = true;
 	    await _tileMapSolver.GenerateMap();
     }
     
@@ -208,15 +224,24 @@
 	    message = string.Empty;
     }
     
-    private async void Reset()
+    private async Task ResetStart()
     {
+	    _tileMapSolver.Stop();
+	    
 	    _canDraw = false;
-	    await Task.Delay(1);
 	    this.StateHasChanged();
+	    await Task.Delay(1);
+	   
+	    
+
+    }
+    private async Task ResetEnd()
+    {
+
+	   
 	    _canDraw = true;
-	    await Task.Delay(1);
 	    this.StateHasChanged();
-	    await Task.Delay(1);
+	
     }
 
     public void Dispose()

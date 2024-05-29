@@ -140,6 +140,12 @@ public class MapController(TileService tileService) : ControllerBase
         var userId = idString == null ? 0 : long.Parse(idString);
         return (await tileService.CopyTileSet(tileId,userId) ).Match(Ok, this.ErrorResult);
     }
-  
+    
+    [HttpGet("getBaseTileSets"),Authorize]
+    public async Task<IActionResult> BaseTileSets()
+    {
+        
+        return (await tileService.GetBaseSets()).Match(Ok, this.ErrorResult);
+    }
     
 }

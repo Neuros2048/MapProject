@@ -173,6 +173,13 @@ public class MapService
         return false;
     }
     
+    public async Task<List<TileSetDto>> GetBaseTileSets()
+    {
+        var res = await _http.GetAsync(_controllerBase + "getBaseTileSets");
+        if (!res.IsSuccessStatusCode) return new List<TileSetDto>();
+        return ((await res.Content.ReadFromJsonAsync<SuccessData<List<TileSetDto>>>())!).Data!;
+    }
+    
     
     
 }

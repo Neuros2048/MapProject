@@ -6,11 +6,13 @@
 <div class="card bg-nice-black text-white" style="border-radius: 1rem; width: auto;">
     <div class="card-body p-5 ">
         <div @ref="_container" class="graphicFiled">
-            <Canvas id="canvasId"  width="800" height="800" @ref="_context" @onclick="canOn" style="border: 1px solid black"></Canvas> </div>
+            <Canvas id="canvasId"  width="@_width" height="@_height" @ref="_context" @onclick="canOn" style="border: 1px solid black"></Canvas> </div>
     </div>
 </div>
 
 @code {
+    private int _width = 800;
+    private int _height = 800;
     private ElementReference _container;
     private Canvas _context = null!;
     
@@ -59,9 +61,17 @@
         }
     }
 
-    public async Task Resize(int wight, int height)
+    public async Task Resize(int width, int height)
     {
-        await Js.InvokeVoidAsync("resizeCanvas", "canvasId", wight,height);
+        this._width = width;
+        this._height = height;
+        await Js.InvokeVoidAsync("resizeCanvas", "canvasId", width,height);
+    }
+
+    public async Task Clear()
+    {
+        await using var ctx = await _context.GetContext2DAsync();
+        await ctx.ClearRectAsync(0, 0, _width, _height);
     }
     
 }

@@ -115,7 +115,7 @@
             var next = a;
             var px = pol.P.X / 100;
             var py = pol.P.Y / 100;
-            Console.WriteLine(output[ px][py]);
+        
             if (output[ px][py] > 0.7)
             {
                 await _canvasPolygon.ChangeColorFill(CanvasPolygon.LandTypes.Gory);
@@ -130,12 +130,7 @@
             }
             await _canvasPolygon.DrawPoint((int)pol.P.X/100,(int) pol.P.Y/100);
             await _canvasPolygon.DrawShape(pol,100);
-            //Console.WriteLine($"centrum {j} numer {pol.P.X} {pol.P.Y}");
-            /*do
-            {
-                await _canvasPolygon.Drawline( (int)next.Previous.Point.X/100, (int)next.Previous.Point.Y/100,(int)next.Point.X/100, (int)next.Point.Y/100);
-                next = next.Next;
-            } while (a != next);*/
+            
 
             await Task.Delay(1);
         }

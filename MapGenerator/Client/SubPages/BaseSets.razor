@@ -1,0 +1,54 @@
+﻿@using Client.Services
+@using Shared.DTO
+@inject MapService MapS
+	<div class="card bg-nice-black text-white" style="border-radius: 1rem; width: auto">
+<div class="card-body p-5 ">
+   
+        <h3>Zbory Podstawowe</h3>
+        <table class="table table-striped table-bordered table-hover table-dark">
+        		<thead class="table-dark">
+        		<tr>
+        			<th scope="col" class="col-3 text-center" >Nazwa zbiory</th>
+        			
+        				<th scope="col" class="col-1 text-center">skopiuj</th>
+        			
+        		</tr>
+        		</thead>
+        		<tbody>
+        		@foreach (var ts in _sets)
+        		{
+        			<tr>
+        				<td class="text-center align-middle font" style="font-size: 2rem;">
+        					<div>@ts.Name</div> </td>
+				        
+        					<td class="text-center">
+        						
+        						<i class="bi bi-pen-fill text-warning icon-responsive" style="font-size: 2rem;" @onclick="() => ChoseToCopy(ts)" ></i>
+                                					
+        					</td>
+        				
+        			</tr>
+        		}
+        		</tbody>
+        	</table>
+    </div>
+</div>
+
+@code {
+	private List<TileSetDto> _sets = new List<TileSetDto>();
+	[Parameter] 
+    public Action? SetWasCopy { get; set; }
+	protected override async void OnInitialized()
+	{
+		
+		 _sets = await MapS.GetBaseTileSets();
+		 this.StateHasChanged();
+	}
+
+	private async void ChoseToCopy(TileSetDto tileSetDto)
+	{
+		await MapS.CopyTileSet(tileSetDto.Id);
+		SetWasCopy!.Invoke();
+	}
+
+}

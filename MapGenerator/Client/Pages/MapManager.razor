@@ -6,7 +6,7 @@
 @inject IJSRuntime Js
 @inject ILocalStorageService LocalStorageService
 
-<button @onclick="CopyBaseSet" class="btn btn-danger w-100 my-4 mb-2 ">Copt</button>
+
 <div class="  text-white d-flex flex-row align-items-center justify-content-center" >
 	<div class="card bg-nice-black text-white" style="border-radius: 1rem; width: 18rem">
 		<div class="card-body p-5 ">
@@ -28,10 +28,13 @@
 					</div>
 				</EditForm>
 			}
+			
 		</div>
 	</div>
 	<div  style="width :20px"></div>
 	<TileSetTable Look="false" Edit="true" Delete="true" EditTileSet="SetCurrSet"  DeleteTileSet="DeleteCurrSet" ></TileSetTable>
+	<BaseSets SetWasCopy="SetWasZCopied"></BaseSets>
+	
 </div>
 <div  style="height :20px"></div>
 @if (CurrSetDto.Id != 0)
@@ -94,10 +97,13 @@
 	  
     }
 
-    private async void CopyBaseSet()
+    private async void SetWasZCopied()
     {
-	     await MapS.CopyTileSet(3);
+	   
+	    
     }
+    
+    
     
    
    

@@ -18,10 +18,12 @@
  	private Random rnd = new Random();
     private int toReaload;
     private int currReaload;
+    private bool CanWork = false;
     int[] curr;
     
 	public async Task GenerateMap()
 	{
+		CanWork = true;
 		mapOfTile = new Tilep[Map.N][];
 		for (int i = 0; i < Map.N; i++)
 		{
@@ -45,17 +47,18 @@
 				TilesIds.Add(tw.TileId);
 			
 			}
+			if(!CanWork) break;
 			
 		} 
 		allPossibilities = new List<int>();
-		for (int i = 0; i < TilesTypes.Count(); i++)
+		for (int i = 0; i < TilesTypes.Count() && CanWork; i++)
 		{
 			allPossibilities.Add(i);
 		}
 		
-		for (int i = 0; i < Map.N; i++)
+		for (int i = 0; i < Map.N && CanWork; i++)
 		{
-			for (int j = 0; j < Map.M; j++)
+			for (int j = 0; j < Map.M && CanWork; j++)
 			{
 				mapOfTile[i][j] = new Tilep();
 			}
@@ -63,8 +66,10 @@
 		q.Clear();
 		foreach (var st in Map.SetTileDtos)
 		{
+			if(!CanWork) break;
 			mapOfTile[st.N][st.M].Type = st.TileId;
 			EvaluateBeginning(st.N,st.M);
+			
 		}
 
 		if (q.Count == 0)
@@ -75,7 +80,7 @@
 		}
 		
 		
-		while (q.Count > 0)
+		while (q.Count > 0 && CanWork)
 		{
 			curr = q.Dequeue();
 			
@@ -89,10 +94,15 @@
 
 	public async Task SetedTiles()
 	{
+		CanWork = true;
 		foreach (var t in Map.SetTileDtos)
 		{
+			
+			await Task.Delay(1);
+			if(!CanWork) break;
 			TileToSet.Invoke(t);
 		}
+		await Task.Delay(1);
 	}
 	
 
@@ -224,5 +234,11 @@
 		{
 			Reduce( MapS.TilesUrl[tileId].P0,n,m+1,2);
 		}
+	}
+
+	public void Stop()
+	{
+		CanWork = false;
+
 	}
 }
