@@ -10,6 +10,10 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
     public DbSet<GeneratedMap> GeneratedMaps { get; set; }
     public DbSet<SetTile> SetTiles { get; set; }
     public DbSet<TileWeight> Weights { get; set; }
+    public DbSet<PolygonMap> PolygonMaps { get; set; }
+    public DbSet<HumidityPoint> HumidityPoints { get; set; }
+    public DbSet<HeightPoint> HeightPoints { get; set; }
+    
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -19,6 +23,9 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(GeneratedMap).Assembly);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(SetTile).Assembly);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(TileWeight).Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(PolygonMap).Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(HeightPoint).Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(HumidityPoint).Assembly);
 
         Seed(modelBuilder);
     }

@@ -8,6 +8,7 @@ public static class ServicesInjection
     {
         serviceCollection.AddScoped<AuthService>();
         serviceCollection.AddScoped<TileService>();
+        serviceCollection.AddScoped<PolygonMapService>();
         return serviceCollection;
     }
 }

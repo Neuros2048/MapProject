@@ -9,7 +9,7 @@ namespace Server.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class MapController(TileService tileService) : ControllerBase
+public class MapController(TileService tileService,PolygonMapService polygonMapService) : ControllerBase
 {
     
    
@@ -146,6 +146,41 @@ public class MapController(TileService tileService) : ControllerBase
     {
         
         return (await tileService.GetBaseSets()).Match(Ok, this.ErrorResult);
+    }
+    
+    [HttpGet("getPolygonMap"),Authorize]
+    public async Task<IActionResult> GetPolygonMap(long mapId)
+    {
+        var idString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = idString == null ? 0 : long.Parse(idString);
+        
+        return (await polygonMapService.GetPolygonMap(mapId,userId)).Match(Ok, this.ErrorResult);
+    }
+    [HttpGet("getAllPolygonMaps"),Authorize]
+    public async Task<IActionResult> GetAllPolygonMaps()
+    {
+        var idString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = idString == null ? 0 : long.Parse(idString);
+        
+        return (await polygonMapService.GetAll(userId)).Match(Ok, this.ErrorResult);
+    }
+    
+    [HttpDelete("DeletePolygonMap"),Authorize]
+    public async Task<IActionResult> DeletePolygonMap(long mapId)
+    {
+        var idString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = idString == null ? 0 : long.Parse(idString);
+        
+        return (await polygonMapService.DeletePolygonMap(mapId,userId)).Match(Ok, this.ErrorResult);
+    }
+    
+    [HttpPut("CreatPolygonMap"),Authorize]
+    public async Task<IActionResult> CreatPolygonMap(PolygonMapDto polygonMapDto)
+    {
+        var idString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = idString == null ? 0 : long.Parse(idString);
+        
+        return (await polygonMapService.AddPolygonMap(polygonMapDto,userId)).Match(Ok, this.ErrorResult);
     }
     
 }

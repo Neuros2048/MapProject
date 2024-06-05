@@ -1,0 +1,156 @@
+﻿@using Shared.DTO
+
+<div class="d-flex  ">
+ 
+        <div class="card bg-nice-black text-white" style="border-radius: 1rem; width: 30rem;">
+            <div class="card-body p-5 ">
+
+
+                <div>
+                    <label >Wysokość : </label>
+                    <InputText @bind-Value=" PolygonMap.Name" class="from-control"/>
+                </div>
+
+                <div>
+                    <label >Wysokość : </label>
+                    <InputNumber @bind-Value=" PolygonMap.Height" class="from-control"/>
+                </div>
+
+
+                <div>
+                    <label >Szerokość : </label>
+                    <InputNumber @bind-Value=" PolygonMap.Width" class="from-control"/>
+                </div>
+                <div>
+                    <label >Liczba Poligonów : </label>
+                    <InputNumber @bind-Value=" PolygonMap.Polygons" class="from-control"/>
+                </div>
+
+                <div class="form-check form-switch">
+                    <input class="form-check-input" @bind="@randomSeed" type="checkbox" id="flexSwitchCheckDefault">
+                    <label class="form-check-label" for="flexSwitchCheckDefault">Losowe Ziarno</label>
+                </div>
+                @if (!randomSeed)
+                {
+                    <div>
+                        <label >Ziaro : </label>
+                        <InputNumber @bind-Value=" PolygonMap.Seed" class="from-control"/>
+                    </div>
+                }
+                <button type="button" class="btn btn-primary  w-100 my-4 mb-2" onclick="@AddHeight">Dodaj punkt wysokości</button>
+                        <button type="button" class="btn btn-primary  w-100 my-4 mb-2" onclick="@AddHumidity">Dodaj punkt wilhotnosci</button>
+                        <button type="button" class="btn btn-primary  w-100 my-4 mb-2" onclick="@GenMap">Wygenruj Mape</button>
+                        <button type="button" class="btn btn-primary  w-100 my-4 mb-2" onclick="@MapToSave">Zapisz mape</button>
+            </div>
+        </div>
+        
+        
+@if (PolygonMap.HeightPoints.Count + PolygonMap.HumidityPoints.Count > 0)
+{
+    
+    <div  style="width:5px"></div>
+    <div class="card bg-nice-black text-white" style="border-radius: 1rem; width: auto;">
+        <div class="card-body p-5 ">
+            <div class="d-flex   ">
+              
+                @foreach (var heightPoint in PolygonMap.HeightPoints)
+                {
+                    <PointDtoEdit PointDto="heightPoint" DeletePoint="DeleteHeight" HeightHumidity="true"></PointDtoEdit>
+                    <div  style="width:5px"></div>
+                }
+
+               
+             
+            </div>
+            <div  style="height:5px"></div>
+            <div class="d-flex   ">
+                 @foreach (var humidityPoint in PolygonMap.HumidityPoints)
+                                {
+                                    <PointDtoEdit PointDto="humidityPoint" DeletePoint="DeleteHumidity" HeightHumidity="false" ></PointDtoEdit>
+                                    <div  style="width:5px"></div>
+                                }
+            </div>
+        
+
+        </div>
+    </div>
+}
+
+        
+ 
+</div>
+
+
+
+
+@code {
+    private bool randomSeed = false;
+    private PolygonMapDto PolygonMap { get; set; } = new PolygonMapDto()
+    {
+        Height = 800,
+        Width = 800,
+        Seed = 12321,
+        Polygons = 400,
+        Name = "Nowa mapa"
+    };
+    [Parameter]
+    public Action<PolygonMapDto> MakeMap { get; set; }
+    [Parameter]
+    public Action<PolygonMapDto> SaveMap { get; set; }
+    
+    private void RandomSeed()
+    {
+        randomSeed = !randomSeed;
+    }
+    
+    public void GenMap()
+    {
+        if (randomSeed)
+        {
+            PolygonMap.Seed = (int)DateTime.Now.Ticks & 0x0000FFFF;
+        }
+        MakeMap.Invoke(PolygonMap);
+    }
+
+    public void SetMap(PolygonMapDto polygonMapDto)
+    {
+        randomSeed = false;
+        PolygonMap = polygonMapDto;
+        
+        this.StateHasChanged();
+    }
+
+    private void DeleteHeight(MapPointDto pointDto)
+    {
+        PolygonMap.HeightPoints.Remove(pointDto);
+        this.StateHasChanged();
+    }
+
+    private void DeleteHumidity(MapPointDto pointDto)
+    {
+        PolygonMap.HumidityPoints.Remove(pointDto);
+        this.StateHasChanged();
+    }
+
+    private void AddHumidity()
+    {
+        Console.WriteLine(PolygonMap.HumidityPoints == null);
+        PolygonMap.HumidityPoints.Add(new MapPointDto());
+        this.StateHasChanged();
+    }
+
+    private void AddHeight()
+    {
+        PolygonMap.HeightPoints.Add(new MapPointDto());
+        this.StateHasChanged();
+    }
+
+    private void MapToSave()
+    {
+        
+        SaveMap.Invoke(PolygonMap);
+    }
+
+    
+
+}

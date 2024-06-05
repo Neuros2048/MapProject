@@ -2,15 +2,18 @@
 @using Client.SubPages
 @using System.Numerics
 @using System.Drawing
+@using System.Runtime.Intrinsics.X86
+
 @using Client.Logic
 @using Client.Services
+
 @inject PolygonMapService Pms
 <h3>PolygonMap</h3>
 <button type="submit" class="btn btn-primary" onclick="@GenMap">Niech isę stanie </button>
 <div  class="graphicFiled">
 <CanvasPolygon @ref="_canvasPolygon" OnMouseClick="OnMouseClick"></CanvasPolygon></div>
 <button type="submit" class="btn btn-primary" onclick="@Clear">Wyczysc </button>
-
+<button type="submit" class="btn btn-primary" onclick="@Test">test </button>
 @code {
     private CanvasPolygon _canvasPolygon = null!;
 
@@ -18,11 +21,57 @@
     {
         await _canvasPolygon.DrawPoint(pos.X, pos.Y);
     }
-  
+    private class Wilgotnosc
+    {
+        int x;
+        int y;
+        double strenght;
+
+        public Wilgotnosc(int x, int y, double strenght)
+        {
+            this.x = x;
+            this.y = y;
+            this.strenght = strenght;
+        }
+    }
+    private class Temperatura
+    {
+        public int x;
+        public int y;
+        public double strenght;
+
+        public Temperatura(int x, int y, double strenght)
+        {
+            this.x = x;
+            this.y = y;
+            this.strenght = strenght;
+        }
+    }
     
     double[][] output;
+
+    private void Test()
+    {
+        Console.WriteLine("hej per");
+        SimplexNoise.Noise.Seed = 209323094;
+        var res = SimplexNoise.Noise.Calc2D(100, 100, 0.01f);
+        Console.WriteLine("perlin");
+        for (int i = 0; i < 100; i++)
+        {
+            for (int j = 0; j < 100; j++)
+            {
+                Console.Write( res[i,j]+" ");
+            }
+            Console.WriteLine( );
+        }
+        
+    }
+    
     private async void GenMap()
     {
+
+       
+        
         Random rnd;
         int seed = (int)DateTime.Now.Ticks & 0x0000FFFF;
         Console.WriteLine(seed);
@@ -33,16 +82,16 @@
         int pn = 400;
         await _canvasPolygon.ClearMap();
        
-        List<PolygonMapService.Point> points = new List<PolygonMapService.Point>();
+        List<Point> points = new List<Point>();
         for (int i = 0; i < pn; i++)
         {
-            points.Add( new PolygonMapService.Point(rnd.Next(wight), rnd.Next(height)));
+            points.Add( new Point(rnd.Next(wight), rnd.Next(height)));
             //await _canvasPolygon.DrawPoint(rnd.Next(wight), rnd.Next(height));
         }
         //
         Noise noise = new Noise();
        
-        noise.PerlinNoise2D(800,800,432,4,1.0,out output);
+        noise.PerlinNoise2D(800,800,seed,4,1.0,out output);
         
         Console.WriteLine($"{output[0][200]} OK");
 
@@ -93,7 +142,7 @@
         }
 
         await Task.Delay(1);
-        await drawCentres(centers);
+        await DrawMap(centers, wight, height, seed);
 
         
 
@@ -122,7 +171,7 @@
             }
             else if (output[ px][py]  > 0.4)
             {
-                await _canvasPolygon.ChangeColorFill(CanvasPolygon.LandTypes.Las);
+                await _canvasPolygon.ChangeColorFill(CanvasPolygon.LandTypes.GLas);
             }
             else
             {
@@ -138,6 +187,125 @@
         return centers;
     }
     
+    private async Task<List<Poly2.Center>> DrawMap(List<Poly2.Center> centers,int wight,int height,int seed)
+    {
+        
+        var oper = new Poly2(wight*100,0, height *100,0);
+        centers = oper.Solve(centers);
+        await _canvasPolygon.ClearMap();
+        int j =0;
+        SimplexNoise.Noise.Seed = seed;
+        var noiseMap = SimplexNoise.Noise.Calc2D(wight, height, 0.001f);
+        
+        foreach (var pol in centers)
+        {
+            await _canvasPolygon.ChangeColorLine(j++);
+            
+            var a = pol.E;
+            var next = a;
+            var px = pol.P.X / 100;
+            var py = pol.P.Y / 100;
+            
+            Console.WriteLine($"{wight}  {height}");
+            double dis = noiseMap[px, py] - Distance(wight / 2, height / 2, px, py)*0.6 ;
+            Console.WriteLine($"{px} {py} {dis} {Distance(wight / 2, height / 2, px, py)*0.6}");
+            double tp = 0;
+            double d;
+            List<Temperatura> pogoda = new List<Temperatura>();
+            foreach (var p in pogoda)
+            {
+                d = Distance(p.x, p.y, px, py);
+                d = d < 1 ? 1 : d; 
+                tp += 10 * p.strenght / d;
+            }
+            
+            if ( dis > 150)
+            {
+                await _canvasPolygon.ChangeColorFill(CanvasPolygon.LandTypes.Gory);
+                if (tp > 10)
+                {
+                    
+                }else if (tp > 5)
+                {
+                    
+                }
+                else if(tp > -5)
+                {
+                    
+                }
+                else if(tp > -10)
+                {
+                    
+                }
+                else
+                {
+                    
+                }
+              
+            }
+            else if ( dis > 0)
+            {
+                await _canvasPolygon.ChangeColorFill(CanvasPolygon.LandTypes.GLas);
+                if (tp > 10)
+                {
+                    
+                }else if (tp > 5)
+                {
+                    
+                }
+                else if(tp > -5)
+                {
+                    
+                }
+                else if(tp > -10)
+                {
+                    
+                }
+                else
+                {
+                    
+                }
+                
+            }
+            else
+            {
+                await _canvasPolygon.ChangeColorFill(CanvasPolygon.LandTypes.Woda);
+                if (tp > 10)
+                {
+                    
+                }else if (tp > 5)
+                {
+                    
+                }
+                else if(tp > -5)
+                {
+                    
+                }
+                else if(tp > -10)
+                {
+                    
+                }
+                else
+                {
+                    
+                }
+                
+            }
+            await _canvasPolygon.DrawPoint((int)pol.P.X/100,(int) pol.P.Y/100);
+            await _canvasPolygon.DrawShape(pol,100);
+            
+
+            await Task.Delay(1);
+        }
+
+        return centers;
+    }
+
+    private double Distance(double x1, double y1, double x2, double y2)
+    {
+        return Math.Sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+    }
+    
     private async void Clear()
     {
         await _canvasPolygon.ClearMap();
@@ -147,7 +315,34 @@
 
     
     
-    
+    public struct Point
+    {
+        public double X, Y;
+        public Point(double x, double y)
+        {
+            this.X = x;
+            this.Y = y;
+        }
+        public Point()
+        {
+            this.X = 0;
+            this.Y = 0;
+        }
+        public static Point operator +(Point a, Point b)
+            => new Point(a.X+ b.X , a.Y + b.Y);
+
+        public static Point operator -(Point a, Point b)
+            => new Point(a.X- b.X , a.Y - b.Y);
+
+        public static Point operator *(Point a, double b)
+            => new Point(a.X* b , a.Y * b);
+        public Point rot() {
+            return new Point(-Y,X);
+        }
+        public double len() {
+            return Double.Hypot(X,Y);
+        }
+    }
     
     
     

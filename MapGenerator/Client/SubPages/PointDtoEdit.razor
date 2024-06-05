@@ -1,0 +1,50 @@
+﻿@using Shared.DTO
+<div class="card bg-dark" style="border-radius: 1rem; width: 25rem;">
+    <div class="card-body p-5 ">
+	 
+		    <div class="d-flex flex-column justify-content-center ">
+			    <div class="text-center">
+				    @if (HeightHumidity)
+				    {
+					    <h5 class="card-title"> Punkt Wysokości</h5>
+				    }
+				    else
+				    {
+					    <h5 class="card-title">Punkt Wilgoności</h5>
+				    }
+				  
+				    <div>
+					    <label >X : </label>
+					    <InputNumber @bind-Value="PointDto.X" class="from-control"/>
+				    </div>
+				    <div>
+					    <label >Y : </label>
+					    <InputNumber @bind-Value="PointDto.Y" class="from-control"/>
+				    </div>
+				    <div>
+					    <label >Power : </label>
+					    <InputNumber @bind-Value="PointDto.Power" class="from-control"/>
+				    </div>
+
+				    <button type="button" class="btn btn-danger  w-100 my-4 mb-2" onclick="@Delete">Usuń</button>
+
+			    </div>
+		    </div>
+	
+    </div>
+</div>
+
+@code {
+	[Parameter]
+    public MapPointDto PointDto { get; set; } = new MapPointDto();
+	[Parameter]
+    public Action<MapPointDto> DeletePoint { get; set; }
+
+	[Parameter] public bool HeightHumidity { get; set; } = false;
+	
+	
+	private void Delete()
+	{
+		DeletePoint.Invoke(PointDto);
+	}
+}

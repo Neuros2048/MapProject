@@ -1,0 +1,118 @@
+﻿@using Client.Services
+@using Shared.DTO
+
+
+
+@inject PolygonMapService MapS;
+
+
+<div class="card bg-nice-black text-white" style="border-radius: 1rem; width: 40rem">
+<div class="card-body p-5 ">
+	<table class="table table-striped table-bordered table-hover table-dark">
+		<thead class="table-dark">
+		<tr>
+			<th scope="col" class="col-3 text-center" >Nazwa zbiory</th>
+			@if (Look)
+			{
+				<th scope="col"  class="col-1 text-center">Zobacz</th>
+			}
+			@if (Copy)
+			{
+				<th scope="col" class="col-1 text-center">Skopiuj</th>
+			}
+			@if (Delete)
+			{
+				<th scope="col" class="col-1 text-center">Usun</th>
+			}
+			
+		</tr>
+		</thead>
+		<tbody>
+		@foreach (var pm in _mapsList)
+		{
+			<tr>
+				<td class="text-center align-middle font" style="font-size: 2rem;">
+					<div>@pm.Name</div> </td>
+				@if (Look)
+				{
+					<td class="text-center">
+						
+						<i class="bi bi-eye-fill text-green icon-responsive" style="font-size: 2rem;" @onclick="() => ChoseToLook(pm)"></i>
+					</td>
+				}
+				@if (Copy)
+				{
+					<td class="text-center">
+						
+						<i class="bi bi-pen-fill text-warning icon-responsive" style="font-size: 2rem;" @onclick="() => ChoseToCopy(pm)" ></i>
+                        					
+					</td>
+					
+				}
+				@if (Delete)
+				{
+					<td class="text-center">
+						
+						<i class="bi bi-trash3-fill text-danger icon-responsive" style="font-size: 2rem;" @onclick="() => ChoseToDelete(pm)" ></i>
+					</td>
+				}
+			</tr>
+		}
+		</tbody>
+	</table>
+</div>
+</div>
+@code {
+	[Parameter]
+	public bool Look { get; set; }
+	[Parameter]
+	public bool Copy { get; set; }
+	[Parameter]
+	public bool Delete { get; set; }
+	[Parameter]
+	public Action<PolygonMapDto>? LookMap { get; set; }
+	[Parameter]
+	public Action<PolygonMapDto>? CopyMap { get; set; }
+	[Parameter]
+	public Action<PolygonMapDto>? DeleteMap { get; set; }
+
+	private List<PolygonMapDto> _mapsList = [];
+
+	protected override async void OnInitialized()
+	{
+		await Reload();
+	}
+
+
+	private void ChoseToLook(PolygonMapDto pm)
+	{
+		LookMap?.Invoke(pm);
+	}
+
+	private void ChoseToCopy(PolygonMapDto pm)
+	{
+		
+		CopyMap?.Invoke(pm);
+	}
+
+	private async Task ChoseToDelete(PolygonMapDto pm)
+	{
+		var s = await MapS.DeletePolygonMap(pm.Id);
+		await this.Reload();
+		Console.WriteLine(s);
+		DeleteMap?.Invoke(pm);
+	}
+
+	public async Task Reload()
+	{
+		_mapsList = await MapS.GetAllPolygonMaps();
+		this.StateHasChanged();
+	}
+
+	public async Task AddMap(PolygonMapDto polygonMapDto)
+	{
+		await MapS.CreatPolygonMap(polygonMapDto);
+		await Reload();
+	} 
+
+}

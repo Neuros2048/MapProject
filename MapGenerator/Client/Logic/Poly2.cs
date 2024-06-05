@@ -83,7 +83,8 @@ public class Poly2
     {
         //List<Center> centers = new List<Center>();
        
-
+        Console.WriteLine(centers.Count);
+        
         long n = centers.Count;
         Edge inter1 = centers[0].E, inter2;
         Edge end, curr;

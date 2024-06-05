@@ -1,0 +1,92 @@
+﻿@page "/PolygonMapSaved"
+
+@using Client.SubPages
+@using Shared.DTO
+@using Client.Logic
+@using System.Reflection
+
+
+@implements IDisposable;
+@inject ILocalStorageService LocalStorageService
+
+
+
+<PolygonMapsList @ref="_mapsList" Look="true" Delete="true" LookMap="LookMap" ></PolygonMapsList>
+<div  style="height:10px"></div>
+
+<MapSetting @ref="_mapSetting"  MakeMap="MakeMap" SaveMap="SaveMap" ></MapSetting>
+<div  style="width:5px"></div>
+<PolygonSolver @ref="_solver" ChangFill="ChangFill" ClearMap="ClearMap" PolygonToDraw="DrawPolygon"></PolygonSolver>
+<div  style="width:5px"></div>
+<CanvasPolygon @ref="_context" ></CanvasPolygon>
+<div  style="width:10px"></div>
+
+
+@code {
+	private PolygonSolver _solver;
+	private CanvasPolygon _context;
+	private MapSetting _mapSetting;
+	private PolygonMapsList _mapsList;
+	private bool working = true;
+    public void Dispose()
+    {
+	    _solver.Stop();
+	    working = false;
+	    Task.Delay(1);
+    }
+
+
+    private async void MakeMap(PolygonMapDto polygonMap)
+    {
+	    _solver.Stop();
+	    working = false;
+	    await Task.Delay(10);
+	    //_solver = new PolygonSolver();
+	    this.StateHasChanged();
+	    await Task.Delay(10);
+	    await _context.Resize(polygonMap.Height, polygonMap.Width);
+	    working = true;
+	    await _solver.SolveMap(polygonMap);
+    }
+
+    private async void ChangFill(CanvasPolygon.LandTypes landTypes)
+    {
+	    if (working)
+	    {
+		    await _context.ChangeColorFill(landTypes);    
+	    }
+	    
+    }
+
+    private async void DrawPolygon(Poly2.Center center)
+    {
+	    if (working)
+	    {
+		    await _context.DrawShape(center, 100);
+	    }
+    }
+
+    private async void ClearMap()
+    {
+	    if (working)
+	    {
+		    await _context.ClearMap();
+	    }
+    }
+
+    private async void SaveMap(PolygonMapDto polygonMapDto)
+    {
+	
+	    await _mapsList.AddMap(polygonMapDto);
+    }
+
+    private async void LookMap(PolygonMapDto polygonMapDto)
+    {
+	    
+	    _mapSetting.SetMap(polygonMapDto);
+	    await _mapsList.Reload();
+
+    }
+
+    
+}

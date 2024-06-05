@@ -8,4 +8,5 @@ public class User
     public string? Email { get; set; }
     
     public List<TileSet> TileSets { get; set; }
+    public List<PolygonMap> PolygonMaps { get; set; }
 }
