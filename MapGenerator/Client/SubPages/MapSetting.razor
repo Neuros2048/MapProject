@@ -33,13 +33,27 @@
                 @if (!randomSeed)
                 {
                     <div>
-                        <label >Ziaro : </label>
+                        <label >Ziarno : </label>
                         <InputNumber @bind-Value=" PolygonMap.Seed" class="from-control"/>
                     </div>
                 }
                 <button type="button" class="btn btn-primary  w-100 my-4 mb-2" onclick="@AddHeight">Dodaj punkt wysokości</button>
                         <button type="button" class="btn btn-primary  w-100 my-4 mb-2" onclick="@AddHumidity">Dodaj punkt wilhotnosci</button>
-                        <button type="button" class="btn btn-primary  w-100 my-4 mb-2" onclick="@GenMap">Wygenruj Mape</button>
+                <button type="button" class="btn btn-primary  w-100 my-4 mb-2" onclick="@GenMap">Wygenruj Mape</button>
+                @if (!string.IsNullOrEmpty(_message))
+                {
+
+                	<div class="card  bg bg-primary flex-fill bg-opacity-50 text-white d-flex flex-row align-items-center justify-content-center" style="border-radius: 1rem;">
+
+
+                		<p class="mb-0">@_message</p>
+                		<div style="width:10px"></div>
+                		<a class="bi bi-x " onclick="@ResetMassage" style="font-size: 24px;"></a>
+
+                	</div>
+                	<div style="height: 3px"></div>
+                }
+                
                         <button type="button" class="btn btn-primary  w-100 my-4 mb-2" onclick="@MapToSave">Zapisz mape</button>
             </div>
         </div>
@@ -89,7 +103,7 @@
     {
         Height = 800,
         Width = 800,
-        Seed = 12321,
+        Seed = (int)DateTime.Now.Ticks & 0x0000FFFF,
         Polygons = 400,
         Name = "Nowa mapa"
     };
@@ -149,6 +163,18 @@
     {
         
         SaveMap.Invoke(PolygonMap);
+    }
+
+    public void SetSaveMassage(string message)
+    {
+        this._message = message;
+        this.StateHasChanged();
+    }
+    private string _message = string.Empty;
+    
+    private void ResetMassage()
+    {
+        _message = string.Empty;
     }
 
     

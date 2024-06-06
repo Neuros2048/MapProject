@@ -2,6 +2,7 @@
 
 namespace Shared.Validators;
 
+// Fluent Validator
 public class PasswordValidator : ValidationAttribute
 {
 

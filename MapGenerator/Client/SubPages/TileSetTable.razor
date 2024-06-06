@@ -77,7 +77,6 @@
 	
 	protected override async void OnInitialized()
 	{
-	   
 		await MapS.TileSets();
 		this.StateHasChanged();
 	}
@@ -95,6 +94,12 @@
 	private void ChoseToDelete(TileSetDto ts)
 	{
 		DeleteTileSet?.Invoke(ts);
+	}
+
+	public async Task Reload()
+	{
+		await MapS.TileSets();
+		this.StateHasChanged();
 	}
 
 }

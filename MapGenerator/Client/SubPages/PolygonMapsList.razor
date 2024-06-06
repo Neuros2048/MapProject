@@ -99,6 +99,7 @@
 	{
 		var s = await MapS.DeletePolygonMap(pm.Id);
 		await this.Reload();
+		//#if DEBUG
 		Console.WriteLine(s);
 		DeleteMap?.Invoke(pm);
 	}
@@ -109,10 +110,11 @@
 		this.StateHasChanged();
 	}
 
-	public async Task AddMap(PolygonMapDto polygonMapDto)
+	public async Task<bool> AddMap(PolygonMapDto polygonMapDto)
 	{
-		await MapS.CreatPolygonMap(polygonMapDto);
+		var res = await MapS.CreatPolygonMap(polygonMapDto);
 		await Reload();
+		return res;
 	} 
 
 }

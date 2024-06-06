@@ -12,3 +12,15 @@ public class PolygonMapDto
     public List<MapPointDto> HumidityPoints { get; set; } = [];
     public List<MapPointDto> HeightPoints { get; set; } = [];
 }
+
+public record PolygonMapDto1
+(
+    long Id,
+    int Seed,
+    int Height,
+    int Width,
+    int Polygons,
+    string? Name,
+    List<MapPointDto> HumidityPoints,
+    List<MapPointDto> HeightPoints
+);

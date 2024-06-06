@@ -1,16 +1,32 @@
 ﻿@page "/"
 
 <div class="text-center">
-       <AuthorizeView>
-           <Authorized>
-               <h1>Hello, @context.User.Identity?.Name!</h1>
-               <a>Ta staona umożliwaw </a>
-           </Authorized>
-           <NotAuthorized>
-               <h1>Hello, world!</h1>
-           </NotAuthorized>
-       </AuthorizeView>
-    </div>
+    <AuthorizeView>
+        <Authorized>
+            <h1>Witaj  @context.User.Identity?.Name!</h1>
+            
+        </Authorized>
+        <NotAuthorized>
+               
+        </NotAuthorized>
+    </AuthorizeView>
+    <h1>Ta Aplikacja służąca od generowania map!</h1>
+    <br/>
+    <h2>Umożliwa składanie map z pojedynczych kafeków po przez zdefiniowanie zależności między nimi</h2>
+    <br/>
+    <img  src="sample-data/Home/tileMap.png">
+    <br/>
+    <div style="height: 30px"></div>
+    <h3>Albo tworzenie map z polygonów dostosowywująć wilgoność terenu i jego wysokośći</h3>
+    <br/>
+    <img  src="sample-data/Home/polyMap.png">
+  
+    <br/>
+      <div style="height: 30px"></div>
+    <h1>Wygenerowane mapy można zapisać na kącie Użytkownika i wórcić do nich póżniej </h1>
+    
+    
+</div>
 
 
 

@@ -36,7 +36,7 @@
 
 @code {
 	[Parameter]
-    public MapPointDto PointDto { get; set; } = new MapPointDto();
+    public MapPointDto PointDto { get; set; } = new();
 	[Parameter]
     public Action<MapPointDto> DeletePoint { get; set; }
 

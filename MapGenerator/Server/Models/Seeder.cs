@@ -2,7 +2,7 @@
 using Server.Entities.Entities;
 
 namespace Server.Models;
-
+// Bogus
 public static class Seeder
 {
     public static IEnumerable<User> GenerateUsers()

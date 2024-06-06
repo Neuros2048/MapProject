@@ -77,7 +77,15 @@
     private async void SaveMap(PolygonMapDto polygonMapDto)
     {
 	
-	    await _mapsList.AddMap(polygonMapDto);
+	    var res = await _mapsList.AddMap(polygonMapDto);
+	    if (res)
+	    {
+		    _mapSetting.SetSaveMassage("Udało się zapisać mape");
+	    }
+	    else
+	    {
+		    _mapSetting.SetSaveMassage("NIe udało się zapisać mapy");
+	    }
     }
 
     private async void LookMap(PolygonMapDto polygonMapDto)

@@ -32,7 +32,8 @@
 		</div>
 	</div>
 	<div  style="width :20px"></div>
-	<TileSetTable Look="false" Edit="true" Delete="true" EditTileSet="SetCurrSet"  DeleteTileSet="DeleteCurrSet" ></TileSetTable>
+	<TileSetTable @ref="_tileSetTable" Look="false" Edit="true" Delete="true" EditTileSet="SetCurrSet"  DeleteTileSet="DeleteCurrSet" ></TileSetTable>
+		<div  style="width:10px"></div>
 	<BaseSets SetWasCopy="SetWasZCopied"></BaseSets>
 	
 </div>
@@ -47,6 +48,7 @@
     private TileSetDto tileSetDto = new TileSetDto();
     private TileSetDto CurrSetDto = new TileSetDto();
     private List<TileDto> tiles = new List<TileDto>();
+    private TileSetTable _tileSetTable;
     private List<TileSetDto> _tileSetDtos { get; set; } =new List<TileSetDto>();
     private bool sets = false;
     private bool creatSet = false; 
@@ -81,7 +83,13 @@
 	    await MapS.DeleteTileSet(tile.Id);
 	    _tileSetDtos =  await MapS.GetTileSets();
 	    sets = true;
+	    if (tile.Id == CurrSetDto.Id)
+	    {
+		    CurrSetDto = new TileSetDto();
+	    }
 	    this.StateHasChanged();
+	    await _tileSetTable.Reload();
+	    
     }
     protected override async void OnInitialized()
     {
@@ -99,8 +107,7 @@
 
     private async void SetWasZCopied()
     {
-	   
-	    
+	    await _tileSetTable.Reload();
     }
     
     
